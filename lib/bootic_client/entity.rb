@@ -10,6 +10,11 @@ module BooticClient
       attrs[key.to_sym]
     end
 
+    def has?(prop_name)
+      prop_name = prop_name.to_sym
+      has_property?(prop_name) || has_entity?(prop_name)
+    end
+
     def method_missing(name, *args, &block)
       if !block_given?
         name = name.to_sym
@@ -26,8 +31,7 @@ module BooticClient
     end
 
     def respond_to_missing?(method_name, include_private = false)
-      method_name = method_name.dup.to_sym
-      has_property?(method_name) || has_entity?(method_name)
+      has?(method_name)
     end
 
     protected

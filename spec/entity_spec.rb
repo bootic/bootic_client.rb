@@ -52,6 +52,13 @@ describe BooticClient::Entity do
     end
 
     describe 'embedded entities' do
+
+      it 'responds to #has?' do
+        expect(entity.has?(:total_items)).to be_true
+        expect(entity.has?(:items)).to be_true
+        expect(entity.has?(:foobar)).to be_false
+      end
+
       it 'are exposed like normal attributes' do
         expect(entity.items).to be_kind_of(Array)
         entity.items.first.tap do |product|
@@ -67,6 +74,10 @@ describe BooticClient::Entity do
           expect(shop.name).to eql('Acme')
         end
       end
+    end #/ embedded entities
+
+    describe 'link relations' do
+      
     end
   end
 
