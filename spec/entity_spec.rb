@@ -10,7 +10,14 @@ describe BooticClient::Entity do
       '_links' => {
         'self' => {'href' => '/foo'},
         'next' => { 'href' => '/foo?page=2'},
-        'btc:products' => {'href' => '/all/products'}
+        'btc:products' => {'href' => '/all/products'},
+        'curies' => [
+          {
+            'name' => "btc",
+            'href' => "https://developers.bootic.net/rels/{rel}",
+            'templated' => true
+          }
+        ]
       },
       "_embedded" => {
         'items' => [
@@ -92,6 +99,10 @@ describe BooticClient::Entity do
       it 'understands namespaced cURIes' do
         expect(entity.rels[:products]).to be_kind_of(BooticClient::Relation)
         expect(entity.rels[:products].href).to eql('/all/products')
+      end
+
+      it 'adds docs if cURIes available' do
+        expect(entity.rels[:products].docs).to eql('https://developers.bootic.net/rels/products')
       end
 
       context 'lazily fetching rels' do

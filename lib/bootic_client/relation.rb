@@ -21,8 +21,16 @@ module BooticClient
       attrs['type']
     end
 
+    def docs
+      attrs['docs']
+    end
+
     def get(opts = {})
       client.get_and_wrap uri.expand(opts), wrapper_class
+    end
+
+    def self.expand(href, opts = {})
+      URITemplate.new(href).expand(opts)
     end
 
     protected

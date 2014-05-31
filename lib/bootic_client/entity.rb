@@ -3,6 +3,8 @@ require "bootic_client/relation"
 module BooticClient
   class Entity
 
+    CURIE_EXP = /(.+):(.+)/.freeze
+
     def initialize(attrs, client)
       @attrs, @client = attrs, client
       build!
@@ -52,15 +54,19 @@ module BooticClient
       iterable? ? entities[:items].each(&block) : [self].each(&block)
     end
 
-    CURIE_EXP = /(.+):(.+)/.freeze
-
     def rels
-      @rels ||= attrs.fetch('_links', {}).each_with_object({}) do |(rel,rel_attrs),memo|
-        if rel =~ CURIE_EXP
-          _, curie_namespace, rel = rel.split(CURIE_EXP)
+      @rels ||= (
+        links = attrs.fetch('_links', {})
+        links.each_with_object({}) do |(rel,rel_attrs),memo|
+          if rel =~ CURIE_EXP
+            _, curie_namespace, rel = rel.split(CURIE_EXP)
+            if curie = (links['curies'] || []).find{|c| c['name'] == curie_namespace}
+              rel_attrs['docs'] = BooticClient::Relation.expand(curie['href'], rel: rel)
+            end
+          end
+          memo[rel.to_sym] = BooticClient::Relation.new(rel_attrs, client, Entity)
         end
-        memo[rel.to_sym] = BooticClient::Relation.new(rel_attrs, client, Entity)
-      end
+      )
     end
 
     protected
