@@ -9,17 +9,15 @@ module BooticClient
     end
 
     def [](key)
-      attrs[key.to_sym]
+      attrs[key.to_s]
     end
 
     def has?(prop_name)
-      prop_name = prop_name.to_sym
       has_property?(prop_name) || has_entity?(prop_name) || has_rel?(prop_name)
     end
 
     def method_missing(name, *args, &block)
       if !block_given?
-        name = name.to_sym
         if has_property?(name)
           self[name]
         elsif has_entity?(name)
@@ -39,7 +37,7 @@ module BooticClient
     end
 
     def has_property?(prop_name)
-      attrs.has_key?(prop_name.to_sym)
+      attrs.has_key?(prop_name.to_s)
     end
 
     def has_entity?(prop_name)
@@ -47,7 +45,7 @@ module BooticClient
     end
 
     def has_rel?(prop_name)
-      rels.has_key? prop_name
+      rels.has_key? prop_name.to_sym
     end
 
     def each(&block)
@@ -55,8 +53,8 @@ module BooticClient
     end
 
     def rels
-      @rels ||= attrs.fetch(:_links, {}).each_with_object({}) do |(key,rel_attrs),memo|
-        memo[key] = BooticClient::Relation.new(rel_attrs, client, Entity)
+      @rels ||= attrs.fetch('_links', {}).each_with_object({}) do |(key,rel_attrs),memo|
+        memo[key.to_sym] = BooticClient::Relation.new(rel_attrs, client, Entity)
       end
     end
 
@@ -69,8 +67,8 @@ module BooticClient
     end
 
     def build!
-      @entities = attrs.fetch(:_embedded, {}).each_with_object({}) do |(k,v),memo|
-        memo[k] = if v.kind_of?(Array)
+      @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
+        memo[k.to_sym] = if v.kind_of?(Array)
           v.map{|ent_attrs| Entity.new(ent_attrs, client)}
         else
           Entity.new(v, client)

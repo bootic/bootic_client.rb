@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe BooticClient::Relation do
   let(:client) { double(:client) }
-  let(:relation) { BooticClient::Relation.new({href: '/foo/bars', type: 'application/json', title: 'A relation'}, client) }
+  let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'title' => 'A relation'}, client) }
 
   describe 'attributes' do
     it 'has readers for known relation attributes' do
@@ -13,7 +13,7 @@ describe BooticClient::Relation do
   end
 
   describe '#get' do
-    let(:entity) { BooticClient::Entity.new({title: 'Foobar'}, client) }
+    let(:entity) { BooticClient::Entity.new({'title' => 'Foobar'}, client) }
 
     it 'fetches data and returns entity' do
       client.stub(:get_and_wrap).with('/foo/bars', BooticClient::Entity).and_return entity
@@ -21,7 +21,7 @@ describe BooticClient::Relation do
     end
 
     context 'with URI templates' do
-      let(:relation) { BooticClient::Relation.new({href: '/foos/{id}{?q,page}', type: 'application/json', title: 'A relation'}, client) }
+      let(:relation) { BooticClient::Relation.new({'href' => '/foos/{id}{?q,page}', 'type' => 'application/json', 'title' => 'A relation'}, client) }
 
       it 'works with defaults' do
         expect(client).to receive(:get_and_wrap).with('/foos/', BooticClient::Entity).and_return entity

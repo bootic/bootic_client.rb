@@ -10,15 +10,15 @@ module BooticClient
     end
 
     def href
-      attrs[:href]
+      attrs['href']
     end
 
     def title
-      attrs[:title]
+      attrs['title']
     end
 
     def type
-      attrs[:type]
+      attrs['type']
     end
 
     def get(opts = {})

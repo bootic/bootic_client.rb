@@ -4,37 +4,37 @@ describe BooticClient::Entity do
   let(:client) { double(:client) }
   let(:list_payload) do
     {
-      total_items: 10,
-      per_page: 2,
-      page: 1,
-      _links: {
-        self: {href: '/foo'},
-        next: { href: '/foo?page=2'}
+      'total_items' => 10,
+      'per_page' => 2,
+      'page' => 1,
+      '_links' => {
+        'self' => {'href' => '/foo'},
+        'next' => { 'href' => '/foo?page=2'}
       },
-      _embedded: {
-        items: [
+      "_embedded" => {
+        'items' => [
           {
-            title: 'iPhone 4',
-            price: 12345,
-            _links: {
-              self: {href: '/products/iphone4'}
+            'title' => 'iPhone 4',
+            'price' => 12345,
+            '_links' => {
+              'self' => {href: '/products/iphone4'}
             },
-            _embedded: {
-              shop: {
-                name: 'Acme'
+            '_embedded' => {
+              'shop' => {
+                'name' => 'Acme'
               }
             }
           },
 
           {
-            title: 'iPhone 5',
-            price: 12342,
-            _links: {
-              self: {href: '/products/iphone5'}
+            'title' => 'iPhone 5',
+            'price' => 12342,
+            '_links' => {
+              'self' => {href: '/products/iphone5'}
             },
-            _embedded: {
-              shop: {
-                name: 'Apple'
+            '_embedded' => {
+              'shop' => {
+                'name' => 'Apple'
               }
             }
           }
@@ -84,7 +84,7 @@ describe BooticClient::Entity do
       end
 
       context 'lazily fetching rels' do
-        let(:next_page) { BooticClient::Entity.new({page: 2}, client) }
+        let(:next_page) { BooticClient::Entity.new({'page' => 2}, client) }
 
         before do
           client.stub(:get_and_wrap).with('/foo?page=2', BooticClient::Entity).and_return next_page
@@ -108,7 +108,7 @@ describe BooticClient::Entity do
       end
 
       it 'iterates itself if not a list' do
-        ent = BooticClient::Entity.new({foo: 'bar'}, client)
+        ent = BooticClient::Entity.new({'foo' => 'bar'}, client)
         ents = []
         ent.each{|e| ents << e}
         expect(ents).to match_array([ent])
