@@ -63,12 +63,21 @@ describe BooticClient::Entity do
       expect(entity.page).to eql(1)
     end
 
+    it 'has a #properties object' do
+      expect(entity.properties['total_items']).to eql(10)
+    end
+
+    it 'responds to #has?' do
+      expect(entity.has?(:total_items)).to be_true
+      expect(entity.has?(:items)).to be_true
+      expect(entity.has?(:foobar)).to be_false
+    end
+
     describe 'embedded entities' do
 
-      it 'responds to #has?' do
-        expect(entity.has?(:total_items)).to be_true
-        expect(entity.has?(:items)).to be_true
-        expect(entity.has?(:foobar)).to be_false
+      it 'has a #entities object' do
+        expect(entity.entities[:items]).to be_a(Array)
+        expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
       end
 
       it 'are exposed like normal attributes' do
