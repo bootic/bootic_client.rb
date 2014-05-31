@@ -52,9 +52,14 @@ module BooticClient
       iterable? ? entities[:items].each(&block) : [self].each(&block)
     end
 
+    CURIE_EXP = /(.+):(.+)/.freeze
+
     def rels
-      @rels ||= attrs.fetch('_links', {}).each_with_object({}) do |(key,rel_attrs),memo|
-        memo[key.to_sym] = BooticClient::Relation.new(rel_attrs, client, Entity)
+      @rels ||= attrs.fetch('_links', {}).each_with_object({}) do |(rel,rel_attrs),memo|
+        if rel =~ CURIE_EXP
+          _, curie_namespace, rel = rel.split(CURIE_EXP)
+        end
+        memo[rel.to_sym] = BooticClient::Relation.new(rel_attrs, client, Entity)
       end
     end
 

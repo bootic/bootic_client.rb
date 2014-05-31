@@ -9,7 +9,8 @@ describe BooticClient::Entity do
       'page' => 1,
       '_links' => {
         'self' => {'href' => '/foo'},
-        'next' => { 'href' => '/foo?page=2'}
+        'next' => { 'href' => '/foo?page=2'},
+        'btc:products' => {'href' => '/all/products'}
       },
       "_embedded" => {
         'items' => [
@@ -81,6 +82,16 @@ describe BooticClient::Entity do
     describe 'link relations' do
       it 'responds to #has? for link relations' do
         expect(entity.has?(:next)).to be_true
+      end
+
+      it 'builds relation objects' do
+        expect(entity.rels[:next]).to be_kind_of(BooticClient::Relation)
+        expect(entity.rels[:next].href).to eql('/foo?page=2')
+      end
+
+      it 'understands namespaced cURIes' do
+        expect(entity.rels[:products]).to be_kind_of(BooticClient::Relation)
+        expect(entity.rels[:products].href).to eql('/all/products')
       end
 
       context 'lazily fetching rels' do
