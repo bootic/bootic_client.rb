@@ -6,6 +6,7 @@ describe BooticClient::Entity do
     {
       total_items: 10,
       per_page: 2,
+      page: 1,
       _links: {
         self: {href: '/foo'},
         next: { href: '/foo?page=2'}
@@ -49,6 +50,7 @@ describe BooticClient::Entity do
     it 'knows about plain properties' do
       expect(entity.total_items).to eql(10)
       expect(entity.per_page).to eql(2)
+      expect(entity.page).to eql(1)
     end
 
     describe 'embedded entities' do
@@ -77,7 +79,25 @@ describe BooticClient::Entity do
     end #/ embedded entities
 
     describe 'link relations' do
-      
+      it 'responds to #has? for link relations' do
+        expect(entity.has?(:next)).to be_true
+      end
+
+      context 'lazily fetching rels' do
+        let(:next_page) { BooticClient::Entity.new({page: 2}, client) }
+
+        before do
+          client.stub(:get_and_wrap).with('/foo?page=2', BooticClient::Entity).and_return next_page
+        end
+
+        it 'exposes link target resources as normal properties' do
+          entity.next.tap do |next_entity|
+            expect(next_entity).to be_kind_of(BooticClient::Entity)
+            expect(next_entity.page).to eql(2)
+          end
+        end
+      end
+
     end
   end
 
