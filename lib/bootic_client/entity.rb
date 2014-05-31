@@ -27,7 +27,7 @@ module BooticClient
         elsif has_entity?(name)
           entities[name]
         elsif has_rel?(name)
-          rels[name].get
+          rels[name].get(*args)
         else
           super
         end

@@ -11,6 +11,7 @@ describe BooticClient::Entity do
         'self' => {'href' => '/foo'},
         'next' => { 'href' => '/foo?page=2'},
         'btc:products' => {'href' => '/all/products'},
+        'btc:search' => {'href' => '/search{?q}'},
         'curies' => [
           {
             'name' => "btc",
@@ -111,15 +112,20 @@ describe BooticClient::Entity do
         expect(prod.rels[:delete_product].docs).to eql('https://developers.bootic.net/rels/delete_product')
       end
 
-      context 'lazily fetching rels' do
+      context 'eagerly fetching rels' do
         let(:next_page) { BooticClient::Entity.new({'page' => 2}, client) }
 
-        before do
-          client.stub(:get_and_wrap).with('/foo?page=2', BooticClient::Entity).and_return next_page
+        it 'exposes link target resources as normal properties' do
+          expect(client).to receive(:get_and_wrap).with('/foo?page=2', BooticClient::Entity).and_return next_page
+          entity.next.tap do |next_entity|
+            expect(next_entity).to be_kind_of(BooticClient::Entity)
+            expect(next_entity.page).to eql(2)
+          end
         end
 
-        it 'exposes link target resources as normal properties' do
-          entity.next.tap do |next_entity|
+        it 'takes optional URI parameters' do
+          expect(client).to receive(:get_and_wrap).with('/search?q=foo', BooticClient::Entity).and_return next_page
+          entity.search(q: 'foo').tap do |next_entity|
             expect(next_entity).to be_kind_of(BooticClient::Entity)
             expect(next_entity.page).to eql(2)
           end
