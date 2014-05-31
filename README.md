@@ -1,3 +1,5 @@
+## WORK IN PROGRESS
+
 # BooticClient
 
 Official Ruby client for the [Bootic API](https://developers.bootic.net)
@@ -30,11 +32,13 @@ end
 ### Using with an existing access token
 
 ```ruby
-client = BooticClient.new(access_token: 'beidjbewjdiedue...')
+bootic = BooticClient.client(access_token: 'beidjbewjdiedue...', logging: true)
 
-if client.has?(:products)
+root = bootic.root
+
+if root.has?(:products)
   # All products
-  all_products = client.products(q: 'xmas presents')
+  all_products = root.products(q: 'xmas presents')
   all_products.total_items # => 23443
   all_products.each do |product|
     puts product.title
