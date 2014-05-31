@@ -7,6 +7,10 @@ describe BooticClient::Entity do
       'total_items' => 10,
       'per_page' => 2,
       'page' => 1,
+      'an_object' => {
+        'name' => 'Foobar',
+        'age' => 22
+      },
       '_links' => {
         'self' => {'href' => '/foo'},
         'next' => { 'href' => '/foo?page=2'},
@@ -63,8 +67,13 @@ describe BooticClient::Entity do
       expect(entity.page).to eql(1)
     end
 
+    it 'wraps object properties as entities' do
+      expect(entity.an_object.name).to eql('Foobar')
+      expect(entity.an_object.age).to eql(22)
+    end
+
     it 'has a #properties object' do
-      expect(entity.properties['total_items']).to eql(10)
+      expect(entity.properties[:total_items]).to eql(10)
     end
 
     it 'responds to #has?' do

@@ -1,20 +1,22 @@
 require "bootic_client/relation"
+require 'ostruct'
 
 module BooticClient
   class Entity
 
     CURIE_EXP = /(.+):(.+)/.freeze
     CURIES_REL = 'curies'.freeze
+    SPECIAL_PROP_EXP = /^_.+/.freeze
 
-    attr_reader :curies, :properties, :entities
+    attr_reader :curies, :entities
 
     def initialize(attrs, client, top = self)
-      @properties, @client, @top = attrs, client, top
+      @attrs, @client, @top = attrs, client, top
       build!
     end
 
     def [](key)
-      properties[key.to_s]
+      properties[key.to_sym]
     end
 
     def has?(prop_name)
@@ -23,6 +25,27 @@ module BooticClient
 
     def inspect
       %(#<#{self.class.name} props: [#{properties.keys.join(', ')}] rels: [#{rels.keys.join(', ')}] entities: [#{entities.keys.join(', ')}]>)
+    end
+
+    def properties
+      @properties ||= attrs.select{|k,v| !(k =~ SPECIAL_PROP_EXP)}.each_with_object({}) do |(k,v),memo|
+        memo[k.to_sym] = Entity.wrap(v)
+      end
+    end
+
+    def links
+      @links ||= attrs.fetch('_links', {})
+    end
+
+    def self.wrap(obj)
+      case obj
+      when Hash
+        OpenStruct.new(obj)
+      when Array
+        obj.map{|e| wrap(e)}
+      else
+        obj
+      end
     end
 
     def method_missing(name, *args, &block)
@@ -46,7 +69,7 @@ module BooticClient
     end
 
     def has_property?(prop_name)
-      properties.has_key?(prop_name.to_s)
+      properties.has_key? prop_name.to_sym
     end
 
     def has_entity?(prop_name)
@@ -63,7 +86,7 @@ module BooticClient
 
     def rels
       @rels ||= (
-        links = properties.fetch('_links', {})
+        links = attrs.fetch('_links', {})
         links.each_with_object({}) do |(rel,rel_attrs),memo|
           if rel =~ CURIE_EXP
             _, curie_namespace, rel = rel.split(CURIE_EXP)
@@ -81,16 +104,16 @@ module BooticClient
 
     protected
 
-    attr_reader :client, :top
+    attr_reader :client, :top, :attrs
 
     def iterable?
       has_entity?(:items) && entities[:items].respond_to?(:each)
     end
 
     def build!
-      @curies = (top['_links'] || {}).fetch('curies', [])
+      @curies = top.links.fetch('curies', [])
 
-      @entities = properties.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
+      @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
         memo[k.to_sym] = if v.kind_of?(Array)
           v.map{|ent_attrs| Entity.new(ent_attrs, client, top)}
         else
