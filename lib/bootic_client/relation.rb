@@ -1,3 +1,4 @@
+require 'uri_template'
 require "bootic_client/entity"
 
 module BooticClient
@@ -20,12 +21,16 @@ module BooticClient
       attrs[:type]
     end
 
-    def get
-      client.get_and_wrap href, wrapper_class
+    def get(opts = {})
+      client.get_and_wrap uri.expand(opts), wrapper_class
     end
 
     protected
     attr_reader :wrapper_class, :client, :attrs
+
+    def uri
+      @uri ||= URITemplate.new(href)
+    end
   end
 
 end
