@@ -9,8 +9,16 @@ module BooticClient
       @attrs, @client, @wrapper_class = attrs, client, wrapper_class
     end
 
+    def inspect
+      %(#<#{self.class.name} #{attrs.inspect}>)
+    end
+
     def href
       attrs['href']
+    end
+
+    def name
+      attrs['name']
     end
 
     def title
