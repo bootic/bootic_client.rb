@@ -1,3 +1,5 @@
+require "bootic_client/relation"
+
 module BooticClient
   class Entity
 
@@ -23,7 +25,7 @@ module BooticClient
         elsif has_entity?(name)
           entities[name]
         elsif has_rel?(name)
-          client.get_and_wrap rels[name][:href], Entity
+          rels[name].get
         else
           super
         end
@@ -35,10 +37,6 @@ module BooticClient
     def respond_to_missing?(method_name, include_private = false)
       has?(method_name)
     end
-
-    protected
-
-    attr_reader :attrs, :client, :entities
 
     def has_property?(prop_name)
       attrs.has_key?(prop_name.to_sym)
@@ -52,8 +50,22 @@ module BooticClient
       rels.has_key? prop_name
     end
 
+    def each(&block)
+      iterable? ? entities[:items].each(&block) : [self].each(&block)
+    end
+
     def rels
-      @rels ||= attrs.fetch(:_links, {})
+      @rels ||= attrs.fetch(:_links, {}).each_with_object({}) do |(key,rel_attrs),memo|
+        memo[key] = BooticClient::Relation.new(rel_attrs, client, Entity)
+      end
+    end
+
+    protected
+
+    attr_reader :attrs, :client, :entities
+
+    def iterable?
+      has_entity?(:items) && entities[:items].respond_to?(:each)
     end
 
     def build!

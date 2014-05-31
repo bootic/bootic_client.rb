@@ -99,6 +99,21 @@ describe BooticClient::Entity do
       end
 
     end
+
+    describe 'iterating' do
+      it 'iterates items if it is a list' do
+        prods = []
+        entity.each{|pr| prods << pr}
+        expect(prods).to match_array(entity.items)
+      end
+
+      it 'iterates itself if not a list' do
+        ent = BooticClient::Entity.new({foo: 'bar'}, client)
+        ents = []
+        ent.each{|e| ents << e}
+        expect(ents).to match_array([ent])
+      end
+    end
   end
 
 end
