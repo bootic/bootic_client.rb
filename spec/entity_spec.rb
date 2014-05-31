@@ -25,7 +25,8 @@ describe BooticClient::Entity do
             'title' => 'iPhone 4',
             'price' => 12345,
             '_links' => {
-              'self' => {href: '/products/iphone4'}
+              'self' => {href: '/products/iphone4'},
+              'btc:delete_product' => {'href' => '/products/12345'}
             },
             '_embedded' => {
               'shop' => {
@@ -103,6 +104,11 @@ describe BooticClient::Entity do
 
       it 'adds docs if cURIes available' do
         expect(entity.rels[:products].docs).to eql('https://developers.bootic.net/rels/products')
+      end
+
+      it 'adds docs if cURIes available even in nested entities' do
+        prod = entity.items.first
+        expect(prod.rels[:delete_product].docs).to eql('https://developers.bootic.net/rels/delete_product')
       end
 
       context 'lazily fetching rels' do

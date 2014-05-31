@@ -5,8 +5,10 @@ module BooticClient
 
     CURIE_EXP = /(.+):(.+)/.freeze
 
-    def initialize(attrs, client)
-      @attrs, @client = attrs, client
+    attr_reader :curies
+
+    def initialize(attrs, client, top = self)
+      @attrs, @client, @top = attrs, client, top
       build!
     end
 
@@ -60,7 +62,7 @@ module BooticClient
         links.each_with_object({}) do |(rel,rel_attrs),memo|
           if rel =~ CURIE_EXP
             _, curie_namespace, rel = rel.split(CURIE_EXP)
-            if curie = (links['curies'] || []).find{|c| c['name'] == curie_namespace}
+            if curie = curies.find{|c| c['name'] == curie_namespace}
               rel_attrs['docs'] = BooticClient::Relation.expand(curie['href'], rel: rel)
             end
           end
@@ -71,18 +73,20 @@ module BooticClient
 
     protected
 
-    attr_reader :attrs, :client, :entities
+    attr_reader :attrs, :client, :entities, :top
 
     def iterable?
       has_entity?(:items) && entities[:items].respond_to?(:each)
     end
 
     def build!
+      @curies = (top['_links'] || {}).fetch('curies', [])
+
       @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
         memo[k.to_sym] = if v.kind_of?(Array)
-          v.map{|ent_attrs| Entity.new(ent_attrs, client)}
+          v.map{|ent_attrs| Entity.new(ent_attrs, client, top)}
         else
-          Entity.new(v, client)
+          Entity.new(v, client, top)
         end
       end
     end
