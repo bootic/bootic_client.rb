@@ -77,8 +77,8 @@ describe BooticClient::Entity do
     end
 
     it 'responds to #has?' do
-      expect(entity.has?(:total_items)).to be_true
-      expect(entity.has?(:items)).to be_true
+      expect(entity.has?(:total_items)).to eql(true)
+      expect(entity.has?(:items)).to eql(true)
       expect(entity.has?(:foobar)).to be_false
     end
 
@@ -108,7 +108,7 @@ describe BooticClient::Entity do
 
     describe 'link relations' do
       it 'responds to #has? for link relations' do
-        expect(entity.has?(:next)).to be_true
+        expect(entity.has?(:next)).to eql(true)
       end
 
       it 'builds relation objects' do
