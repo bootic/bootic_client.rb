@@ -37,6 +37,60 @@ describe BooticClient::Client do
 
       end
 
+      context 'errors' do
+        describe '500 Server error' do
+          before do
+            stub_request(:get, "https://api.bootic.net/v1")
+              .to_return(status: 500, body: JSON.dump(message: 'Server error'), headers: response_headers)
+          end
+
+          it 'raises exception' do
+            expect{
+              client.get('/v1')
+            }.to raise_error(BooticClient::ServerError)
+          end
+        end
+
+        describe '404 Not Found' do
+          before do
+            stub_request(:get, "https://api.bootic.net/v1")
+              .to_return(status: 404, body: JSON.dump(message: 'not Found'), headers: response_headers)
+          end
+
+          it 'raises exception' do
+            expect{
+              client.get('/v1')
+            }.to raise_error(BooticClient::NotFoundError)
+          end
+        end
+
+        describe '401 Unauthorized' do
+          before do
+            stub_request(:get, "https://api.bootic.net/v1")
+              .to_return(status: 401, body: JSON.dump(message: 'Unauthorised'), headers: response_headers)
+          end
+
+          it 'raises exception' do
+            expect{
+              client.get('/v1')
+            }.to raise_error(BooticClient::UnauthorizedError)
+          end
+        end
+
+        describe '403 Access Forbidden' do
+          before do
+            stub_request(:get, "https://api.bootic.net/v1")
+              .to_return(status: 403, body: JSON.dump(message: 'Access Forbidden'), headers: response_headers)
+          end
+
+          it 'raises exception' do
+            expect{
+              client.get('/v1')
+            }.to raise_error(BooticClient::AccessForbiddenError)
+          end
+        end
+      end
+
     end
 
     describe '#get_and_wrap' do

@@ -1,5 +1,6 @@
 require 'faraday'
 require 'faraday_middleware'
+require "bootic_client/errors"
 
 module BooticClient
 
@@ -29,6 +30,8 @@ module BooticClient
         req.headers['User-Agent'] = USER_AGENT
       end
 
+      raise_if_invalid! @last_response
+      
       @last_response
     end
 
@@ -43,6 +46,12 @@ module BooticClient
       end
     end
 
+    def raise_if_invalid!(resp)
+      raise ServerError, "Server Error" if resp.status > 499
+      raise NotFoundError, "Not Found" if resp.status == 404
+      raise UnauthorizedError, "Unauthorized request" if resp.status == 401
+      raise AccessForbiddenError, "Access Forbidden" if resp.status == 403
+    end
   end
 
 end
