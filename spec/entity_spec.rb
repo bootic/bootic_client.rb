@@ -79,7 +79,7 @@ describe BooticClient::Entity do
     it 'responds to #has?' do
       expect(entity.has?(:total_items)).to eql(true)
       expect(entity.has?(:items)).to eql(true)
-      expect(entity.has?(:foobar)).to be_false
+      expect(entity.has?(:foobar)).to eql(false)
     end
 
     describe 'embedded entities' do
