@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bootic/bootic_client.rb.svg?branch=master)](https://travis-ci.org/bootic/bootic_client.rb)
+
 ## WORK IN PROGRESS
 
 # BooticClient
