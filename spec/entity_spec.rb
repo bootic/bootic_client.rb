@@ -15,7 +15,7 @@ describe BooticClient::Entity do
         'self' => {'href' => '/foo'},
         'next' => { 'href' => '/foo?page=2'},
         'btc:products' => {'href' => '/all/products'},
-        'btc:search' => {'href' => '/search{?q}'},
+        'btc:search' => {'href' => '/search{?q}', 'templated' => true},
         'curies' => [
           {
             'name' => "btc",
@@ -134,7 +134,7 @@ describe BooticClient::Entity do
         let(:next_page) { BooticClient::Entity.new({'page' => 2}, client) }
 
         it 'exposes link target resources as normal properties' do
-          expect(client).to receive(:get_and_wrap).with('/foo?page=2', BooticClient::Entity).and_return next_page
+          expect(client).to receive(:get_and_wrap).with('/foo?page=2', BooticClient::Entity, {}).and_return next_page
           entity.next.tap do |next_entity|
             expect(next_entity).to be_kind_of(BooticClient::Entity)
             expect(next_entity.page).to eql(2)

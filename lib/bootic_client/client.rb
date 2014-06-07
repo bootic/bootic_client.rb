@@ -1,5 +1,7 @@
+require 'logger'
 require 'faraday'
 require 'faraday_middleware'
+require 'faraday-http-cache'
 require "bootic_client/errors"
 
 module BooticClient
@@ -11,21 +13,27 @@ module BooticClient
 
     attr_reader :options, :last_response
 
-    def initialize(options = {})
+    def initialize(options = {}, &block)
       @options = {
         api_url: API_URL,
         access_token: nil,
-        logging: false
+        logging: false,
+        logger: ::Logger.new(STDOUT)
       }.merge(options.dup)
+
+      @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
+
+      conn &block if block_given?
     end
 
-    def get_and_wrap(href, wrapper_class)
-      wrapper_class.new get(href).body, self
+    def get_and_wrap(href, wrapper_class, query = {})
+      wrapper_class.new get(href, query).body, self
     end
 
-    def get(href)
+    def get(href, query = {})
       @last_response = conn.get do |req|
         req.url href
+        req.params.update(query)
         req.headers['Authorization'] = "Bearer #{options[:access_token]}"
         req.headers['User-Agent'] = USER_AGENT
       end
@@ -37,11 +45,15 @@ module BooticClient
 
     protected
 
-    def conn
+    def conn(&block)
       @conn ||= Faraday.new(url: options[:api_url]) do |f|
-        # f.use :http_cache, shared_cache: false, store: Rails.cache, logger: Rails.logger
-        f.response :logger if options[:logging]
+        cache_options = {shared_cache: false, store: options[:cache_store]}
+        cache_options[:logger] = options[:logger] if options[:logging]
+
+        f.use :http_cache, cache_options
+        f.response :logger, options[:logger] if options[:logging]
         f.response :json
+        yield f if block_given?
         f.adapter Faraday.default_adapter
       end
     end

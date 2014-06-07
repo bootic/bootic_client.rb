@@ -17,6 +17,10 @@ module BooticClient
       attrs['href']
     end
 
+    def templated?
+      !!attrs['templated']
+    end
+
     def name
       attrs['name']
     end
@@ -34,7 +38,11 @@ module BooticClient
     end
 
     def get(opts = {})
-      client.get_and_wrap uri.expand(opts), wrapper_class
+      if templated?
+        client.get_and_wrap uri.expand(opts), wrapper_class
+      else
+        client.get_and_wrap href, wrapper_class, opts
+      end
     end
 
     def self.expand(href, opts = {})

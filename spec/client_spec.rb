@@ -7,7 +7,7 @@ describe BooticClient::Client do
   describe 'valid response' do
     let(:client) { BooticClient::Client.new(access_token: 'xxx') }
     let(:response_headers) {
-      {'Content-Type' => 'application/json'}
+      {'Content-Type' => 'application/json', 'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT'}
     }
     let(:root_data) {
       {
@@ -26,8 +26,9 @@ describe BooticClient::Client do
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
+        let!(:response) { client.get('/v1') }
+
         it 'returns parsed Faraday response' do
-          response = client.get('/v1')
           expect(response).to be_kind_of(Faraday::Response)
           expect(response.status).to eql(200)
           response.body.tap do |b|
@@ -35,6 +36,23 @@ describe BooticClient::Client do
           end
         end
 
+        context 'and then cached' do
+          before do
+            @cached_request = stub_request(:get, "https://api.bootic.net/v1")
+              .with(headers: {'If-Modified-Since' => 'Sat, 07 Jun 2014 12:10:33 GMT'})
+              .to_return(status: 304, body: '', headers: response_headers)
+          end
+
+          it 'returns cached response' do
+            r = client.get('/v1')
+            expect(@cached_request).to have_been_requested
+
+            expect(r.status).to eql(200)
+            r.body.tap do |b|
+              expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
+            end
+          end
+        end
       end
 
       context 'errors' do
@@ -96,6 +114,7 @@ describe BooticClient::Client do
     describe '#get_and_wrap' do
       before do
         stub_request(:get, "https://api.bootic.net/v1")
+          .with(query: {foo: 'bar'})
           .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
       end
 
@@ -103,7 +122,7 @@ describe BooticClient::Client do
         wrapper = double('Wrapper Class')
         entity = double('Entity')
         expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-        expect(client.get_and_wrap('/v1', wrapper)).to eql(entity)
+        expect(client.get_and_wrap('/v1', wrapper, foo: 'bar')).to eql(entity)
       end
     end
 

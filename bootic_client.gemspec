@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faraday", '~> 0.9'
   spec.add_dependency "uri_template", '~> 0.7'
   spec.add_dependency "faraday_middleware", '~> 0.9'
+  spec.add_dependency "faraday-http-cache", '~> 0.4'
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
