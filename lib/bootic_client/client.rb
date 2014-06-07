@@ -11,7 +11,7 @@ module BooticClient
     API_URL = 'https://api.bootic.net'.freeze
     USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
 
-    attr_reader :options, :last_response
+    attr_reader :options
 
     def initialize(options = {}, &block)
       @options = {
@@ -31,16 +31,16 @@ module BooticClient
     end
 
     def get(href, query = {})
-      @last_response = conn.get do |req|
+      resp = conn.get do |req|
         req.url href
         req.params.update(query)
         req.headers['Authorization'] = "Bearer #{options[:access_token]}"
         req.headers['User-Agent'] = USER_AGENT
       end
 
-      raise_if_invalid! @last_response
-      
-      @last_response
+      raise_if_invalid! resp
+
+      resp
     end
 
     protected
