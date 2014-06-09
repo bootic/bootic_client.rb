@@ -3,6 +3,7 @@ require 'faraday'
 require 'faraday_middleware'
 require 'faraday-http-cache'
 require "bootic_client/errors"
+require 'faraday/adapter/net_http_persistent'
 
 module BooticClient
 
@@ -54,7 +55,7 @@ module BooticClient
         f.response :logger, options[:logger] if options[:logging]
         f.response :json
         yield f if block_given?
-        f.adapter Faraday.default_adapter
+        f.adapter :net_http_persistent
       end
     end
 
