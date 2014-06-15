@@ -20,13 +20,19 @@ module BooticClient
           hmac_secret: config.client_secret,
           iss: config.client_id,
           prn: client.options[:access_token],
-          aud: 'test',
+          aud: 'api',
           exp: exp
         )
 
         access_token.token
       end
+
+      def auth
+        @auth ||= OAuth2::Client.new(nil, nil, site: config.auth_host)
+      end
     end
 
   end
+
+  strategies[:authorized] = Strategies::Authorized
 end

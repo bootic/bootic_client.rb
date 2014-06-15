@@ -58,6 +58,8 @@ end
 
 ## 1. Refresh token flow (web apps)
 
+In this flow you first get a token by authorizing an app. ie. using [omniauth-bootic](https://github.com/bootic/omniauth-bootic)
+
 ```ruby
 def client
   @client ||= BooticClient.client(:authorized, access_token: session[:access_token]) do |new_token|
