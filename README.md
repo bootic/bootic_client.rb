@@ -28,6 +28,8 @@ Or install it yourself as:
 BooticClient.configure do |c|
   c.client_id = ENV['BOOTIC_CLIENT_ID']
   c.client_secret = ENV['BOOTIC_CLIENT_SECRET']
+  c.logger = Logger.new(STDOUT)
+  c.logging = true
 end
 ```
 

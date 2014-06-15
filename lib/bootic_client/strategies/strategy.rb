@@ -27,6 +27,10 @@ module BooticClient
         end
       end
 
+      def inspect
+        %(#<#{self.class.name} cid: #{config.client_id} root: #{config.api_root} auth: #{config.auth_host}>)
+      end
+
       protected
 
       attr_reader :config, :options, :on_new_token

@@ -1,3 +1,4 @@
+require 'logger'
 require "bootic_client/version"
 require "bootic_client/entity"
 require "bootic_client/relation"
@@ -10,16 +11,20 @@ module BooticClient
 
   class << self
 
-    attr_accessor :client_secret, :client_id, :logger
-    attr_writer :auth_host, :api_root
+    attr_accessor :client_secret, :client_id, :logging, :cache_store
+    attr_writer :auth_host, :api_root, :logger
 
     def strategies
       @strategies ||= {}
     end
 
     def client(strategy_name, client_opts = {}, &on_new_token)
+      opts = client_opts.dup
+      opts[:logging] = logging
+      opts[:logger] = logger if logging
+      opts[:cache_store] = cache_store if cache_store
       require "bootic_client/strategies/#{strategy_name}"
-      strategies.fetch(strategy_name.to_sym).new self, client_opts, &on_new_token
+      strategies.fetch(strategy_name.to_sym).new self, opts, &on_new_token
     end
 
     def auth_host
@@ -28,6 +33,10 @@ module BooticClient
 
     def api_root
       @api_root || API_ROOT
+    end
+
+    def logger
+      @logger || ::Logger.new(STDOUT)
     end
 
     def configure(&block)

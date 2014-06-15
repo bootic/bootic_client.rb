@@ -1,4 +1,3 @@
-require 'logger'
 require 'faraday'
 require 'faraday_middleware'
 require 'faraday-http-cache'
@@ -17,8 +16,7 @@ module BooticClient
       @api_root = api_root
       @options = {
         access_token: nil,
-        logging: false,
-        logger: ::Logger.new(STDOUT)
+        logging: false
       }.merge(options.dup)
 
       @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
