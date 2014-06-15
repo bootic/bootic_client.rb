@@ -42,9 +42,9 @@ bootic = BooticClient.client(:authorized, access_token: 'beidjbewjdiedue...', lo
 
 root = bootic.root
 
-if root.has?(:products)
+if root.has?(:all_products)
   # All products
-  all_products = root.products(q: 'xmas presents')
+  all_products = root.all_products(q: 'xmas presents')
   all_products.total_items # => 23443
   all_products.each do |product|
     puts product.title
