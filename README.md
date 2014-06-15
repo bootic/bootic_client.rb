@@ -25,6 +25,8 @@ Or install it yourself as:
 
 ### Configure with you app's credentials
 
+You first must create an OAuth2 Application in your Bootic dashboard. Then configure the client with your `client_id` and `client_secret`.
+
 ```ruby
 BooticClient.configure do |c|
   c.client_id = ENV['BOOTIC_CLIENT_ID']
