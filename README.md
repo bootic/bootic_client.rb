@@ -30,6 +30,7 @@ BooticClient.configure do |c|
   c.client_secret = ENV['BOOTIC_CLIENT_SECRET']
   c.logger = Logger.new(STDOUT)
   c.logging = true
+  c.cache_store = Rails.cache
 end
 ```
 
@@ -74,6 +75,33 @@ end
 ```ruby
 client = BooticClient.client(:client_credentials, scope: 'admin', access_token: some_store[:access_token]) do |new_token|
   some_store[:access_token] = new_token
+end
+```
+
+
+## Cache storage
+
+`BooticClient` honours HTTP caching headers included in API responses (such as `ETag` and `Last-Modified`).
+
+By default a simple memory store is used. It is recommended that you use a distributed store in production, such as Memcache. In Rails applications you can use the `Rails.cache` interface.
+
+```ruby
+BooticClient.configure do |c|
+  ...
+  c.cache_store = Rails.cache
+end
+```
+
+Outside of Rails, BooticClient ships with a wrapper around the [Dalli](https://github.com/mperham/dalli) memcache client. 
+You must include Dalli in your Gemfile and require the wrapper explicitely.
+
+```ruby
+require 'bootic_client/stores/memcache'
+CACHE_STORE = BooticClient::Stores::Memcache.new(ENV['MEMCACHE_SERVER'])
+
+BooticClient.configure do |c|
+  ...
+  c.cache_store = CACHE_STORE
 end
 ```
 
