@@ -60,7 +60,11 @@ if root.has?(:all_products)
 end
 ```
 
-## 1. Refresh token flow (web apps)
+## Strategies
+
+The Bootic Client supports different authentication strategies depending on the use case.
+
+### 1. Refresh token flow (web apps)
 
 In this flow you first get a token by authorizing an app. ie. using [omniauth-bootic](https://github.com/bootic/omniauth-bootic)
 
@@ -71,16 +75,18 @@ def client
   end
 end
 ```
+Note how the client takes an optional block. This block will be called with a new access token whenever the old one expires.
+It's up to your code to store this token somewhere.
 
+### 2. User-less flow (client credentials - automated scripts)
 
-## 2. User-less flow (client credentials - automated scripts)
+This flow will first use your client credentials to obtain an access_token if started without one.
 
 ```ruby
 client = BooticClient.client(:client_credentials, scope: 'admin', access_token: some_store[:access_token]) do |new_token|
   some_store[:access_token] = new_token
 end
 ```
-
 
 ## Cache storage
 
