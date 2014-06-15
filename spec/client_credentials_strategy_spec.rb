@@ -79,7 +79,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
         @successful_root_request = stub_api_root('foobar', 200, root_data)
       end
 
-      it 'attempts unauthorised API request, gets token from auth an tried again' do
+      it 'attempts unauthorised API request, gets token from auth an tries again' do
         root = client.get('/v1')
         expect(@failed_root_request).to have_been_requested
         expect(@auth_request).to have_been_requested
