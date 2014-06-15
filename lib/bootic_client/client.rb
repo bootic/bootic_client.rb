@@ -1,4 +1,3 @@
-require 'logger'
 require 'faraday'
 require 'faraday_middleware'
 require 'faraday-http-cache'
@@ -9,17 +8,15 @@ module BooticClient
 
   class Client
 
-    API_URL = 'https://api.bootic.net'.freeze
     USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
 
-    attr_reader :options
+    attr_reader :options, :api_root
 
-    def initialize(options = {}, &block)
+    def initialize(api_root, options = {}, &block)
+      @api_root = api_root
       @options = {
-        api_url: API_URL,
         access_token: nil,
-        logging: false,
-        logger: ::Logger.new(STDOUT)
+        logging: false
       }.merge(options.dup)
 
       @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
@@ -32,6 +29,8 @@ module BooticClient
     end
 
     def get(href, query = {})
+      validate_request!
+
       resp = conn.get do |req|
         req.url href
         req.params.update(query)
@@ -47,7 +46,7 @@ module BooticClient
     protected
 
     def conn(&block)
-      @conn ||= Faraday.new(url: options[:api_url]) do |f|
+      @conn ||= Faraday.new(url: api_root) do |f|
         cache_options = {shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
@@ -57,6 +56,10 @@ module BooticClient
         yield f if block_given?
         f.adapter :net_http_persistent
       end
+    end
+
+    def validate_request!
+      raise NoAccessTokenError, "Missing access token" unless options[:access_token]
     end
 
     def raise_if_invalid!(resp)
