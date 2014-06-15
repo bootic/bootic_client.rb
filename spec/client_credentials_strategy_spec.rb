@@ -55,13 +55,13 @@ describe 'BooticClient::Strategies::ClientCredentials' do
       end
 
       it 'requests access token via client_credentials flow' do
-        root = client.get('/v1')
+        root = client.root
         expect(@auth_request).to have_been_requested
         expect(root.message).to eql('Hello!')
       end
 
       it 'yields new token to optional block' do
-        client.get('/v1')
+        client.root
         expect(store[:access_token]).to eql('foobar')
       end
     end
@@ -80,14 +80,14 @@ describe 'BooticClient::Strategies::ClientCredentials' do
       end
 
       it 'attempts unauthorised API request, gets token from auth an tries again' do
-        root = client.get('/v1')
+        root = client.root
         expect(@failed_root_request).to have_been_requested
         expect(@auth_request).to have_been_requested
         expect(root.message).to eql('Hello!')
       end
 
       it 'yields new token to optional block' do
-        client.get('/v1')
+        client.root
         expect(store[:access_token]).to eql('foobar')
       end
     end

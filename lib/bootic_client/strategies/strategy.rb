@@ -3,11 +3,17 @@ require 'oauth2'
 module BooticClient
   module Strategies
     class Strategy
-      def initialize(config, opts = {}, &on_new_token)
-        @config, @options, @on_new_token = config, opts, (on_new_token || Proc.new)
+
+      def initialize(config, client_opts = {}, &on_new_token)
+        @config, @options, @on_new_token = config, client_opts, (on_new_token || Proc.new)
         raise "MUST include client_id" unless config.client_id
         raise "MUST include client_secret" unless config.client_secret
+        raise "MUST include api_root" unless config.api_root
         validate! @options
+      end
+
+      def root
+        get config.api_root
       end
 
       def get(href, query = {})
@@ -42,7 +48,7 @@ module BooticClient
       end
 
       def client
-        @client ||= Client.new(options)
+        @client ||= Client.new(config.api_root, options)
       end
     end
   end

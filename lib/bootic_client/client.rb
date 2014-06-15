@@ -9,14 +9,13 @@ module BooticClient
 
   class Client
 
-    API_URL = 'https://api.bootic.net'.freeze
     USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
 
-    attr_reader :options
+    attr_reader :options, :api_root
 
-    def initialize(options = {}, &block)
+    def initialize(api_root, options = {}, &block)
+      @api_root = api_root
       @options = {
-        api_url: API_URL,
         access_token: nil,
         logging: false,
         logger: ::Logger.new(STDOUT)
@@ -49,7 +48,7 @@ module BooticClient
     protected
 
     def conn(&block)
-      @conn ||= Faraday.new(url: options[:api_url]) do |f|
+      @conn ||= Faraday.new(url: api_root) do |f|
         cache_options = {shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 

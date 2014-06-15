@@ -6,11 +6,12 @@ require "bootic_client/client"
 module BooticClient
 
   AUTH_HOST = 'https://auth.bootic.net'.freeze
+  API_ROOT = 'https://api.bootic.net/v1'.freeze
 
   class << self
 
     attr_accessor :client_secret, :client_id, :logger
-    attr_writer :auth_host
+    attr_writer :auth_host, :api_root
 
     def strategies
       @strategies ||= {}
@@ -23,6 +24,10 @@ module BooticClient
 
     def auth_host
       @auth_host || AUTH_HOST
+    end
+
+    def api_root
+      @api_root || API_ROOT
     end
 
     def configure(&block)

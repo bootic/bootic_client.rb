@@ -5,7 +5,8 @@ describe BooticClient::Client do
   require 'webmock/rspec'
 
   describe 'valid response' do
-    let(:client) { BooticClient::Client.new(access_token: 'xxx') }
+    let(:root_url) { 'https://api.bootic.net/v1' }
+    let(:client) { BooticClient::Client.new(root_url, access_token: 'xxx') }
     let(:response_headers) {
       {'Content-Type' => 'application/json', 'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT'}
     }
@@ -22,11 +23,11 @@ describe BooticClient::Client do
 
       context 'fresh' do
         before do
-          stub_request(:get, "https://api.bootic.net/v1")
+          stub_request(:get, root_url)
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
-        let!(:response) { client.get('/v1') }
+        let!(:response) { client.get(root_url) }
 
         it 'returns parsed Faraday response' do
           expect(response).to be_kind_of(Faraday::Response)
@@ -38,13 +39,13 @@ describe BooticClient::Client do
 
         context 'and then cached' do
           before do
-            @cached_request = stub_request(:get, "https://api.bootic.net/v1")
+            @cached_request = stub_request(:get, root_url)
               .with(headers: {'If-Modified-Since' => 'Sat, 07 Jun 2014 12:10:33 GMT'})
               .to_return(status: 304, body: '', headers: response_headers)
           end
 
           it 'returns cached response' do
-            r = client.get('/v1')
+            r = client.get(root_url)
             expect(@cached_request).to have_been_requested
 
             expect(r.status).to eql(200)
@@ -59,59 +60,59 @@ describe BooticClient::Client do
         describe 'no access token' do
           it 'raises error' do
             expect{
-              BooticClient::Client.new.get('/v1')
+              BooticClient::Client.new(root_url).get(root_url)
             }.to raise_error(BooticClient::NoAccessTokenError)
           end
         end
 
         describe '500 Server error' do
           before do
-            stub_request(:get, "https://api.bootic.net/v1")
+            stub_request(:get, root_url)
               .to_return(status: 500, body: JSON.dump(message: 'Server error'), headers: response_headers)
           end
 
           it 'raises exception' do
             expect{
-              client.get('/v1')
+              client.get(root_url)
             }.to raise_error(BooticClient::ServerError)
           end
         end
 
         describe '404 Not Found' do
           before do
-            stub_request(:get, "https://api.bootic.net/v1")
+            stub_request(:get, root_url)
               .to_return(status: 404, body: JSON.dump(message: 'not Found'), headers: response_headers)
           end
 
           it 'raises exception' do
             expect{
-              client.get('/v1')
+              client.get(root_url)
             }.to raise_error(BooticClient::NotFoundError)
           end
         end
 
         describe '401 Unauthorized' do
           before do
-            stub_request(:get, "https://api.bootic.net/v1")
+            stub_request(:get, root_url)
               .to_return(status: 401, body: JSON.dump(message: 'Unauthorised'), headers: response_headers)
           end
 
           it 'raises exception' do
             expect{
-              client.get('/v1')
+              client.get(root_url)
             }.to raise_error(BooticClient::UnauthorizedError)
           end
         end
 
         describe '403 Access Forbidden' do
           before do
-            stub_request(:get, "https://api.bootic.net/v1")
+            stub_request(:get, root_url)
               .to_return(status: 403, body: JSON.dump(message: 'Access Forbidden'), headers: response_headers)
           end
 
           it 'raises exception' do
             expect{
-              client.get('/v1')
+              client.get(root_url)
             }.to raise_error(BooticClient::AccessForbiddenError)
           end
         end
@@ -121,7 +122,7 @@ describe BooticClient::Client do
 
     describe '#get_and_wrap' do
       before do
-        stub_request(:get, "https://api.bootic.net/v1")
+        stub_request(:get, root_url)
           .with(query: {foo: 'bar'})
           .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
       end
@@ -130,7 +131,7 @@ describe BooticClient::Client do
         wrapper = double('Wrapper Class')
         entity = double('Entity')
         expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-        expect(client.get_and_wrap('/v1', wrapper, foo: 'bar')).to eql(entity)
+        expect(client.get_and_wrap(root_url, wrapper, foo: 'bar')).to eql(entity)
       end
     end
 
