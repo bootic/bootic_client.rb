@@ -34,7 +34,7 @@ end
 ### Using with an existing access token
 
 ```ruby
-bootic = BooticClient.client(access_token: 'beidjbewjdiedue...', logging: true)
+bootic = BooticClient.client(:authorized, access_token: 'beidjbewjdiedue...', logging: true)
 
 root = bootic.root
 
@@ -51,6 +51,25 @@ if root.has?(:products)
     next_page = all_products.next
     next_page.each{...}
   end
+end
+```
+
+## 1. Refresh token flow (web apps)
+
+```ruby
+def client
+  @client ||= BooticClient.client(:authorized, access_token: session[:access_token]) do |new_token|
+    session[:access_token] = new_token
+  end
+end
+```
+
+
+## 2. User-less flow (client credentials - automated scripts)
+
+```ruby
+client = BooticClient.client(:client_credentials, scope: 'admin', access_token: some_store[:access_token]) do |new_token|
+  some_store[:access_token] = new_token
 end
 ```
 

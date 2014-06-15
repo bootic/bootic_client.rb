@@ -56,6 +56,14 @@ describe BooticClient::Client do
       end
 
       context 'errors' do
+        describe 'no access token' do
+          it 'raises error' do
+            expect{
+              BooticClient::Client.new.get('/v1')
+            }.to raise_error(BooticClient::NoAccessTokenError)
+          end
+        end
+
         describe '500 Server error' do
           before do
             stub_request(:get, "https://api.bootic.net/v1")

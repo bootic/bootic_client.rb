@@ -32,6 +32,8 @@ module BooticClient
     end
 
     def get(href, query = {})
+      validate_request!
+
       resp = conn.get do |req|
         req.url href
         req.params.update(query)
@@ -57,6 +59,10 @@ module BooticClient
         yield f if block_given?
         f.adapter :net_http_persistent
       end
+    end
+
+    def validate_request!
+      raise NoAccessTokenError, "Missing access token" unless options[:access_token]
     end
 
     def raise_if_invalid!(resp)
