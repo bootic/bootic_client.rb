@@ -85,7 +85,11 @@ describe 'BooticClient::Strategies::ClientCredentials' do
         expect(@auth_request).to have_been_requested
         expect(root.message).to eql('Hello!')
       end
-      
+
+      it 'yields new token to optional block' do
+        client.get('/v1')
+        expect(store[:access_token]).to eql('foobar')
+      end
     end
   end
 
