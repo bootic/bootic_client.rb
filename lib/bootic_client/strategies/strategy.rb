@@ -5,7 +5,7 @@ module BooticClient
     class Strategy
 
       def initialize(config, client_opts = {}, &on_new_token)
-        @config, @options, @on_new_token = config, client_opts, (on_new_token || Proc.new)
+        @config, @options, @on_new_token = config, client_opts, (on_new_token || Proc.new{})
         raise "MUST include client_id" unless config.client_id
         raise "MUST include client_secret" unless config.client_secret
         raise "MUST include api_root" unless config.api_root

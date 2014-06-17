@@ -82,6 +82,14 @@ describe 'BooticClient::Strategies::Authorized' do
       end
     end
 
+    context 'without a block' do
+      it 'is valid' do
+        expect{
+          BooticClient.client(:authorized, access_token: 'abc')
+        }.not_to raise_error
+      end
+    end
+
     context 'with valid token' do
       before do
         @root_request = stub_api_root('abc', 200, message: 'Hello!')
