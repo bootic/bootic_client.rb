@@ -88,6 +88,48 @@ client = BooticClient.client(:client_credentials, scope: 'admin', access_token: 
 end
 ```
 
+## Non GET links
+
+Most resource links lead to `GET` resources, but some will expect `POST`, `PUT`, `DELETE` or others.
+
+The Bootic API encodes this information in its link metadata so the client will do the right thing. The following example creates a new product on your first shop:
+
+```ruby
+bootic = BooticClient.client(:client_credentials)
+
+root = bootic.root
+
+shop = root.shops.first
+
+if shop.can?(:create_product)
+  product = shop.create_product(
+    title: 'A shiny new product',
+    price: 122332,
+    status: "visible",
+    collecton_names: ["Featured products", "Homepage"],
+    variants: [
+      {
+        title: 'First variant',
+        sku: 'F23332-X',
+        available_if_no_stock: 1,
+        stock: 12
+      }
+    ]
+  )
+
+  puts product.rels[:web].href # => 'http://acme.bootic.net/products/a-shiny-new-product'
+end
+```
+
+## Relation docs
+
+All resource link relations include a "docs" URL so you can learn more about that particular resource.
+
+```ruby
+shop = root.shops.first
+puts shop.rels[:create_product] # => 'https://developers.bootic.net/rels/create_product'
+```
+
 ## Cache storage
 
 `BooticClient` honours HTTP caching headers included in API responses (such as `ETag` and `Last-Modified`).
