@@ -54,5 +54,13 @@ describe BooticClient::Relation do
       end
     end
 
+    describe 'POST' do
+      let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
+
+      it 'POSTS data and returns resulting entity' do
+        client.stub(:post_and_wrap).with('/foo/bars', BooticClient::Entity, {}).and_return entity
+        expect(relation.run).to eql(entity)
+      end
+    end
   end
 end

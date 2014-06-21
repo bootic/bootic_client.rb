@@ -55,6 +55,10 @@ module BooticClient
       end
     end
 
+    def post(opts = {})
+      client.post_and_wrap href, wrapper_class, opts
+    end
+
     def self.expand(href, opts = {})
       URITemplate.new(href).expand(opts)
     end

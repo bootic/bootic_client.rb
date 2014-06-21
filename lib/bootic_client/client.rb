@@ -28,12 +28,31 @@ module BooticClient
       wrapper_class.new get(href, query).body, self
     end
 
+    def post_and_wrap(href, wrapper_class, payload = {})
+      wrapper_class.new post(href, payload).body, self
+    end
+
     def get(href, query = {})
       validate_request!
 
       resp = conn.get do |req|
         req.url href
         req.params.update(query)
+        req.headers['Authorization'] = "Bearer #{options[:access_token]}"
+        req.headers['User-Agent'] = USER_AGENT
+      end
+
+      raise_if_invalid! resp
+
+      resp
+    end
+
+    def post(href, payload = {})
+      validate_request!
+
+      resp = conn.post do |req|
+        req.url href
+        req.body = JSON.dump(payload)
         req.headers['Authorization'] = "Bearer #{options[:access_token]}"
         req.headers['User-Agent'] = USER_AGENT
       end
