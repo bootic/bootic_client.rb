@@ -9,6 +9,7 @@ module BooticClient
   class Client
 
     USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
+    JSON_MIME = 'application/json'.freeze
 
     attr_reader :options, :api_root
 
@@ -33,33 +34,25 @@ module BooticClient
     end
 
     def get(href, query = {})
-      validate_request!
-
-      resp = conn.get do |req|
-        req.url href
-        req.params.update(query)
-        req.headers['Authorization'] = "Bearer #{options[:access_token]}"
-        req.headers['User-Agent'] = USER_AGENT
+      validated! do
+        conn.get do |req|
+          req.url href
+          req.headers.update request_headers
+          req.params.update(query)
+        end
       end
-
-      raise_if_invalid! resp
-
-      resp
     end
 
     def post(href, payload = {})
-      validate_request!
-
-      resp = conn.post do |req|
-        req.url href
-        req.body = JSON.dump(payload)
-        req.headers['Authorization'] = "Bearer #{options[:access_token]}"
-        req.headers['User-Agent'] = USER_AGENT
+      validated! do
+        conn.post do |req|
+          req.url href
+          req.headers.update request_headers
+          req.headers['Accept'] = JSON_MIME
+          req.headers['Content-Type'] = JSON_MIME
+          req.body = JSON.dump(payload)
+        end
       end
-
-      raise_if_invalid! resp
-
-      resp
     end
 
     protected
@@ -75,6 +68,20 @@ module BooticClient
         yield f if block_given?
         f.adapter :net_http_persistent
       end
+    end
+
+    def request_headers
+      {
+        'Authorization' => "Bearer #{options[:access_token]}",
+        'User-Agent' => USER_AGENT
+      }
+    end
+
+    def validated!(&block)
+      validate_request!
+      resp = yield
+      raise_if_invalid! resp
+      resp
     end
 
     def validate_request!

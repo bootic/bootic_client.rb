@@ -138,7 +138,7 @@ describe BooticClient::Client do
     describe '#post_and_wrap' do
       before do
         stub_request(:post, root_url)
-          .with(body: JSON.dump({foo: 'bar'}))
+          .with(body: JSON.dump({foo: 'bar'}), headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json'})
           .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
       end
 
