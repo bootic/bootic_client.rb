@@ -111,6 +111,11 @@ describe BooticClient::Entity do
         expect(entity.has?(:next)).to eql(true)
       end
 
+      it 'responds to #can? for link relations' do
+        expect(entity.can?(:next)).to eql(true)
+        expect(entity.can?(:foo)).to eql(false)
+      end
+
       it 'builds relation objects' do
         expect(entity.rels[:next]).to be_kind_of(BooticClient::Relation)
         expect(entity.rels[:next].href).to eql('/foo?page=2')

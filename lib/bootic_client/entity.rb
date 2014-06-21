@@ -23,6 +23,10 @@ module BooticClient
       has_property?(prop_name) || has_entity?(prop_name) || has_rel?(prop_name)
     end
 
+    def can?(rel_name)
+      has_rel? rel_name
+    end
+
     def inspect
       %(#<#{self.class.name} props: [#{properties.keys.join(', ')}] rels: [#{rels.keys.join(', ')}] entities: [#{entities.keys.join(', ')}]>)
     end
