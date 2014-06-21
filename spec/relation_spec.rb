@@ -13,43 +13,46 @@ describe BooticClient::Relation do
     end
   end
 
-  describe '#get' do
+  describe '#run' do
     let(:entity) { BooticClient::Entity.new({'title' => 'Foobar'}, client) }
 
-    it 'fetches data and returns entity' do
-      client.stub(:get_and_wrap).with('/foo/bars', BooticClient::Entity, {}).and_return entity
-      expect(relation.get).to eql(entity)
+    describe 'running GET by default' do
+      it 'fetches data and returns entity' do
+        client.stub(:get_and_wrap).with('/foo/bars', BooticClient::Entity, {}).and_return entity
+        expect(relation.run).to eql(entity)
+      end
+
+      context 'without URI templates' do
+        let(:relation) { BooticClient::Relation.new({'href' => '/foos/bar', 'type' => 'application/json', 'title' => 'A relation'}, client) }
+
+        it 'is not templated' do
+          expect(relation.templated?).to eql(false)
+        end
+
+        it 'passes query string to client' do
+          expect(client).to receive(:get_and_wrap).with('/foos/bar', BooticClient::Entity, id: 2, q: 'test', page: 2).and_return entity
+          expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
+        end
+      end
+
+      context 'with URI templates' do
+        let(:relation) { BooticClient::Relation.new({'href' => '/foos/{id}{?q,page}', 'type' => 'application/json', 'title' => 'A relation', 'templated' => true}, client) }
+
+        it 'is templated' do
+          expect(relation.templated?).to eql(true)
+        end
+
+        it 'works with defaults' do
+          expect(client).to receive(:get_and_wrap).with('/foos/', BooticClient::Entity).and_return entity
+          expect(relation.run).to eql(entity)
+        end
+
+        it 'interpolates tokens' do
+          expect(client).to receive(:get_and_wrap).with('/foos/2?q=test&page=2', BooticClient::Entity).and_return entity
+          expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
+        end
+      end
     end
 
-    context 'without URI templates' do
-      let(:relation) { BooticClient::Relation.new({'href' => '/foos/bar', 'type' => 'application/json', 'title' => 'A relation'}, client) }
-
-      it 'is not templated' do
-        expect(relation.templated?).to eql(false)
-      end
-
-      it 'passes query string to client' do
-        expect(client).to receive(:get_and_wrap).with('/foos/bar', BooticClient::Entity, id: 2, q: 'test', page: 2).and_return entity
-        expect(relation.get(id: 2, q: 'test', page: 2)).to eql(entity)
-      end
-    end
-
-    context 'with URI templates' do
-      let(:relation) { BooticClient::Relation.new({'href' => '/foos/{id}{?q,page}', 'type' => 'application/json', 'title' => 'A relation', 'templated' => true}, client) }
-
-      it 'is templated' do
-        expect(relation.templated?).to eql(true)
-      end
-
-      it 'works with defaults' do
-        expect(client).to receive(:get_and_wrap).with('/foos/', BooticClient::Entity).and_return entity
-        expect(relation.get).to eql(entity)
-      end
-
-      it 'interpolates tokens' do
-        expect(client).to receive(:get_and_wrap).with('/foos/2?q=test&page=2', BooticClient::Entity).and_return entity
-        expect(relation.get(id: 2, q: 'test', page: 2)).to eql(entity)
-      end
-    end
   end
 end

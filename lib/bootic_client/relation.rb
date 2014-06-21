@@ -5,6 +5,8 @@ module BooticClient
 
   class Relation
 
+    GET = 'get'.freeze
+
     def initialize(attrs, client, wrapper_class = Entity)
       @attrs, @client, @wrapper_class = attrs, client, wrapper_class
     end
@@ -35,6 +37,14 @@ module BooticClient
 
     def docs
       attrs['docs']
+    end
+
+    def transport_method
+      @transport_method ||= attrs['method'] || GET
+    end
+
+    def run(opts = {})
+      self.send(transport_method, opts)
     end
 
     def get(opts = {})
