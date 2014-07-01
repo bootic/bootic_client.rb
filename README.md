@@ -127,7 +127,7 @@ All resource link relations include a "docs" URL so you can learn more about tha
 
 ```ruby
 shop = root.shops.first
-puts shop.rels[:create_product] # => 'https://developers.bootic.net/rels/create_product'
+puts shop.rels[:create_product].docs # => 'https://developers.bootic.net/rels/create_product'
 ```
 
 ## Cache storage
