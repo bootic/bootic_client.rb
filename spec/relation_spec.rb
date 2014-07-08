@@ -18,7 +18,7 @@ describe BooticClient::Relation do
 
     describe 'running GET by default' do
       it 'fetches data and returns entity' do
-        client.stub(:get_and_wrap).with('/foo/bars', BooticClient::Entity, {}).and_return entity
+        client.stub(:request_and_wrap).with(:get, '/foo/bars', BooticClient::Entity, {}).and_return entity
         expect(relation.run).to eql(entity)
       end
 
@@ -30,7 +30,7 @@ describe BooticClient::Relation do
         end
 
         it 'passes query string to client' do
-          expect(client).to receive(:get_and_wrap).with('/foos/bar', BooticClient::Entity, id: 2, q: 'test', page: 2).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/bar', BooticClient::Entity, id: 2, q: 'test', page: 2).and_return entity
           expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
         end
       end
@@ -43,12 +43,12 @@ describe BooticClient::Relation do
         end
 
         it 'works with defaults' do
-          expect(client).to receive(:get_and_wrap).with('/foos/', BooticClient::Entity).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/', BooticClient::Entity, {}).and_return entity
           expect(relation.run).to eql(entity)
         end
 
         it 'interpolates tokens' do
-          expect(client).to receive(:get_and_wrap).with('/foos/2?q=test&page=2', BooticClient::Entity).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', BooticClient::Entity, {id:2,q:'test',page:2}).and_return entity
           expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
         end
       end
@@ -56,10 +56,16 @@ describe BooticClient::Relation do
 
     describe 'POST' do
       let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
+      let(:relation_templated) { BooticClient::Relation.new({'href' => '/foo/{bars}', 'templated' => true, 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
 
       it 'POSTS data and returns resulting entity' do
-        client.stub(:post_and_wrap).with('/foo/bars', BooticClient::Entity, {}).and_return entity
+        client.stub(:request_and_wrap).with(:post, '/foo/bars', BooticClient::Entity, {}).and_return entity
         expect(relation.run).to eql(entity)
+      end
+ 
+      it 'interpolates templated URLs' do
+        client.stub(:request_and_wrap).with(:post, '/foo/123', BooticClient::Entity, {foo: 'bar', bars: 123}).and_return entity
+        expect(relation_templated.run(bars: 123, foo: 'bar')).to eql(entity)
       end
     end
   end

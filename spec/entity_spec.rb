@@ -139,7 +139,7 @@ describe BooticClient::Entity do
         let(:next_page) { BooticClient::Entity.new({'page' => 2}, client) }
 
         it 'exposes link target resources as normal properties' do
-          expect(client).to receive(:get_and_wrap).with('/foo?page=2', BooticClient::Entity, {}).and_return next_page
+          expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', BooticClient::Entity, {}).and_return next_page
           entity.next.tap do |next_entity|
             expect(next_entity).to be_kind_of(BooticClient::Entity)
             expect(next_entity.page).to eql(2)
@@ -147,7 +147,7 @@ describe BooticClient::Entity do
         end
 
         it 'takes optional URI parameters' do
-          expect(client).to receive(:get_and_wrap).with('/search?q=foo', BooticClient::Entity).and_return next_page
+          expect(client).to receive(:request_and_wrap).with(:get, '/search?q=foo', BooticClient::Entity, {q: 'foo'}).and_return next_page
           entity.search(q: 'foo').tap do |next_entity|
             expect(next_entity).to be_kind_of(BooticClient::Entity)
             expect(next_entity.page).to eql(2)

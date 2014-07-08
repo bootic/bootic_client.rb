@@ -131,7 +131,7 @@ describe BooticClient::Client do
         wrapper = double('Wrapper Class')
         entity = double('Entity')
         expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-        expect(client.get_and_wrap(root_url, wrapper, foo: 'bar')).to eql(entity)
+        expect(client.request_and_wrap(:get, root_url, wrapper, foo: 'bar')).to eql(entity)
       end
     end
 
@@ -146,7 +146,7 @@ describe BooticClient::Client do
         wrapper = double('Wrapper Class')
         entity = double('Entity')
         expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-        expect(client.post_and_wrap(root_url, wrapper, foo: 'bar')).to eql(entity)
+        expect(client.request_and_wrap(:post, root_url, wrapper, foo: 'bar')).to eql(entity)
       end
     end
 

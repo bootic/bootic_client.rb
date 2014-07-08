@@ -18,12 +18,12 @@ module BooticClient
 
       def get(href, query = {})
         begin
-          client.get_and_wrap(href, Entity, query)
+          client.request_and_wrap(:get, href, Entity, query)
         rescue TokenError => e
           new_token = get_token
           client.options[:access_token] = new_token
           on_new_token.call new_token
-          client.get_and_wrap(href, Entity, query)
+          client.request_and_wrap(:get, href, Entity, query)
         end
       end
 

@@ -44,19 +44,11 @@ module BooticClient
     end
 
     def run(opts = {})
-      self.send(transport_method, opts)
-    end
-
-    def get(opts = {})
       if templated?
-        client.get_and_wrap uri.expand(opts), wrapper_class
+        client.request_and_wrap transport_method.to_sym, uri.expand(opts), wrapper_class, opts
       else
-        client.get_and_wrap href, wrapper_class, opts
+        client.request_and_wrap transport_method.to_sym, href, wrapper_class, opts
       end
-    end
-
-    def post(opts = {})
-      client.post_and_wrap href, wrapper_class, opts
     end
 
     def self.expand(href, opts = {})

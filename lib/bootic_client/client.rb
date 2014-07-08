@@ -25,14 +25,10 @@ module BooticClient
       conn &block if block_given?
     end
 
-    def get_and_wrap(href, wrapper_class, query = {})
-      wrapper_class.new get(href, query).body, self
+    def request_and_wrap(request_method, href, wrapper_class, payload = {})
+      wrapper_class.new send(request_method, href, payload).body, self
     end
-
-    def post_and_wrap(href, wrapper_class, payload = {})
-      wrapper_class.new post(href, payload).body, self
-    end
-
+ 
     def get(href, query = {})
       validated! do
         conn.get do |req|
