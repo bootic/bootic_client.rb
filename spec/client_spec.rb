@@ -7,6 +7,9 @@ describe BooticClient::Client do
   describe 'valid response' do
     let(:root_url) { 'https://api.bootic.net/v1' }
     let(:client) { BooticClient::Client.new(root_url, access_token: 'xxx') }
+    let(:request_headers) {
+      {'Accept' => 'application/json', 'Content-Type' => 'application/json', 'Authorization' => "Bearer xxx"}
+    }
     let(:response_headers) {
       {'Content-Type' => 'application/json', 'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT'}
     }
@@ -125,7 +128,7 @@ describe BooticClient::Client do
 
         before do
           stub_request(:get, root_url)
-            .with(query: {foo: 'bar'})
+            .with(query: {foo: 'bar'}, headers: request_headers)
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
@@ -140,7 +143,7 @@ describe BooticClient::Client do
       context 'POST' do
         before do
           stub_request(:post, root_url)
-            .with(body: JSON.dump({foo: 'bar'}), headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json'})
+            .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
             .to_return(status: 201, body: JSON.dump(root_data), headers: response_headers)
         end
 
@@ -156,7 +159,7 @@ describe BooticClient::Client do
       context 'PUT' do
         before do
           stub_request(:put, root_url)
-            .with(body: JSON.dump({foo: 'bar'}), headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json'})
+            .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
@@ -167,6 +170,23 @@ describe BooticClient::Client do
           expect(client.request_and_wrap(:put, root_url, wrapper, foo: 'bar')).to eql(entity)
         end
       end
+ 
+
+      context 'DELETE' do
+        before do
+          stub_request(:delete, root_url)
+            .with(headers: request_headers)
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+        end
+
+        it 'wraps JSON response in entity' do
+          wrapper = double('Wrapper Class')
+          entity = double('Entity')
+          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
+          expect(client.request_and_wrap(:delete, root_url, wrapper)).to eql(entity)
+        end
+      end
+ 
     end
 
 

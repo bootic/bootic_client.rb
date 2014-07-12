@@ -44,8 +44,6 @@ module BooticClient
         conn.post do |req|
           req.url href
           req.headers.update request_headers
-          req.headers['Accept'] = JSON_MIME
-          req.headers['Content-Type'] = JSON_MIME
           req.body = JSON.dump(payload)
         end
       end
@@ -57,9 +55,17 @@ module BooticClient
         conn.put do |req|
           req.url href
           req.headers.update request_headers
-          req.headers['Accept'] = JSON_MIME
-          req.headers['Content-Type'] = JSON_MIME
           req.body = JSON.dump(payload)
+        end
+      end
+    end
+ 
+
+    def delete(href, query = {})
+      validated! do
+        conn.delete do |req|
+          req.url href
+          req.headers.update request_headers
         end
       end
     end
@@ -82,7 +88,9 @@ module BooticClient
     def request_headers
       {
         'Authorization' => "Bearer #{options[:access_token]}",
-        'User-Agent' => USER_AGENT
+        'User-Agent' => USER_AGENT,
+        'Accept' => JSON_MIME,
+        'Content-Type' => JSON_MIME
       }
     end
 
