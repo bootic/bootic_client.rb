@@ -120,35 +120,55 @@ describe BooticClient::Client do
 
     end
 
-    describe '#get_and_wrap' do
-      before do
-        stub_request(:get, root_url)
-          .with(query: {foo: 'bar'})
-          .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+    describe '#request_and_wrap' do
+      context 'GET' do
+
+        before do
+          stub_request(:get, root_url)
+            .with(query: {foo: 'bar'})
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+        end
+
+        it 'wraps JSON response in entity' do
+          wrapper = double('Wrapper Class')
+          entity = double('Entity')
+          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
+          expect(client.request_and_wrap(:get, root_url, wrapper, foo: 'bar')).to eql(entity)
+        end
       end
 
-      it 'wraps JSON response in entity' do
-        wrapper = double('Wrapper Class')
-        entity = double('Entity')
-        expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-        expect(client.request_and_wrap(:get, root_url, wrapper, foo: 'bar')).to eql(entity)
+      context 'POST' do
+        before do
+          stub_request(:post, root_url)
+            .with(body: JSON.dump({foo: 'bar'}), headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json'})
+            .to_return(status: 201, body: JSON.dump(root_data), headers: response_headers)
+        end
+
+        it 'wraps JSON response in entity' do
+          wrapper = double('Wrapper Class')
+          entity = double('Entity')
+          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
+          expect(client.request_and_wrap(:post, root_url, wrapper, foo: 'bar')).to eql(entity)
+        end
+      end
+ 
+
+      context 'PUT' do
+        before do
+          stub_request(:put, root_url)
+            .with(body: JSON.dump({foo: 'bar'}), headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json'})
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+        end
+
+        it 'wraps JSON response in entity' do
+          wrapper = double('Wrapper Class')
+          entity = double('Entity')
+          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
+          expect(client.request_and_wrap(:put, root_url, wrapper, foo: 'bar')).to eql(entity)
+        end
       end
     end
 
-    describe '#post_and_wrap' do
-      before do
-        stub_request(:post, root_url)
-          .with(body: JSON.dump({foo: 'bar'}), headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json'})
-          .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
-      end
-
-      it 'wraps JSON response in entity' do
-        wrapper = double('Wrapper Class')
-        entity = double('Entity')
-        expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-        expect(client.request_and_wrap(:post, root_url, wrapper, foo: 'bar')).to eql(entity)
-      end
-    end
 
   end
 end

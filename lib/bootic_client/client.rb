@@ -51,6 +51,19 @@ module BooticClient
       end
     end
 
+
+    def put(href, payload = {})
+      validated! do
+        conn.put do |req|
+          req.url href
+          req.headers.update request_headers
+          req.headers['Accept'] = JSON_MIME
+          req.headers['Content-Type'] = JSON_MIME
+          req.body = JSON.dump(payload)
+        end
+      end
+    end
+
     protected
 
     def conn(&block)
