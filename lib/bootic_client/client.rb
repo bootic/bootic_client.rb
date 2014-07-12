@@ -49,7 +49,6 @@ module BooticClient
       end
     end
 
-
     def put(href, payload = {})
       validated! do
         conn.put do |req|
@@ -59,7 +58,16 @@ module BooticClient
         end
       end
     end
- 
+
+    def patch(href, payload = {})
+      validated! do
+        conn.patch do |req|
+          req.url href
+          req.headers.update request_headers
+          req.body = JSON.dump(payload)
+        end
+      end
+    end
 
     def delete(href, query = {})
       validated! do

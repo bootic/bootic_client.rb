@@ -155,23 +155,23 @@ describe BooticClient::Client do
         end
       end
  
+      [:put, :patch].each do |verb|
+        context verb.to_s.upcase do
+          before do
+            stub_request(verb, root_url)
+              .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
+              .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+          end
 
-      context 'PUT' do
-        before do
-          stub_request(:put, root_url)
-            .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
-            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
-        end
-
-        it 'wraps JSON response in entity' do
-          wrapper = double('Wrapper Class')
-          entity = double('Entity')
-          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-          expect(client.request_and_wrap(:put, root_url, wrapper, foo: 'bar')).to eql(entity)
+          it 'wraps JSON response in entity' do
+            wrapper = double('Wrapper Class')
+            entity = double('Entity')
+            expect(wrapper).to receive(:new).with(root_data, client).and_return entity
+            expect(client.request_and_wrap(verb, root_url, wrapper, foo: 'bar')).to eql(entity)
+          end
         end
       end
  
-
       context 'DELETE' do
         before do
           stub_request(:delete, root_url)
