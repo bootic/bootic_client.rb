@@ -6,7 +6,7 @@ describe BooticClient::Client do
 
   describe 'valid response' do
     let(:root_url) { 'https://api.bootic.net/v1' }
-    let(:client) { BooticClient::Client.new(root_url, access_token: 'xxx') }
+    let(:client) { BooticClient::Client.new(access_token: 'xxx') }
     let(:request_headers) {
       {'Accept' => 'application/json', 'Content-Type' => 'application/json', 'Authorization' => "Bearer xxx"}
     }
@@ -63,7 +63,7 @@ describe BooticClient::Client do
         describe 'no access token' do
           it 'raises error' do
             expect{
-              BooticClient::Client.new(root_url).get(root_url)
+              BooticClient::Client.new.get(root_url)
             }.to raise_error(BooticClient::NoAccessTokenError)
           end
         end

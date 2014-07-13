@@ -52,7 +52,7 @@ module BooticClient
       end
 
       def client
-        @client ||= Client.new(config.api_root, options)
+        @client ||= Client.new(options)
       end
     end
   end
