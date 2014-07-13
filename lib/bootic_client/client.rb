@@ -11,10 +11,9 @@ module BooticClient
     USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
     JSON_MIME = 'application/json'.freeze
 
-    attr_reader :options, :api_root
+    attr_reader :options
 
-    def initialize(api_root, options = {}, &block)
-      @api_root = api_root
+    def initialize(options = {}, &block)
       @options = {
         access_token: nil,
         logging: false
@@ -25,63 +24,38 @@ module BooticClient
       conn &block if block_given?
     end
 
-    def request_and_wrap(request_method, href, wrapper_class, payload = {})
-      wrapper_class.new send(request_method, href, payload).body, self
-    end
- 
     def get(href, query = {})
-      validated! do
-        conn.get do |req|
-          req.url href
-          req.headers.update request_headers
-          req.params.update(query)
-        end
+      validated_request!(:get, href) do |req|
+        req.params.update(query)
       end
     end
 
     def post(href, payload = {})
-      validated! do
-        conn.post do |req|
-          req.url href
-          req.headers.update request_headers
-          req.body = JSON.dump(payload)
-        end
+      validated_request!(:post, href) do |req|
+        req.body = JSON.dump(payload)
       end
     end
 
     def put(href, payload = {})
-      validated! do
-        conn.put do |req|
-          req.url href
-          req.headers.update request_headers
-          req.body = JSON.dump(payload)
-        end
+      validated_request!(:put, href) do |req|
+        req.body = JSON.dump(payload)
       end
     end
 
     def patch(href, payload = {})
-      validated! do
-        conn.patch do |req|
-          req.url href
-          req.headers.update request_headers
-          req.body = JSON.dump(payload)
-        end
+      validated_request!(:patch, href) do |req|
+        req.body = JSON.dump(payload)
       end
     end
 
     def delete(href, query = {})
-      validated! do
-        conn.delete do |req|
-          req.url href
-          req.headers.update request_headers
-        end
-      end
+      validated_request!(:delete, href)
     end
 
     protected
 
     def conn(&block)
-      @conn ||= Faraday.new(url: api_root) do |f|
+      @conn ||= Faraday.new do |f|
         cache_options = {shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
@@ -102,9 +76,14 @@ module BooticClient
       }
     end
 
-    def validated!(&block)
+    def validated_request!(verb, href, &block)
       validate_request!
-      resp = yield
+      resp = conn.send(verb) do |req|
+        req.url href
+        req.headers.update request_headers
+        yield req if block_given?
+      end
+
       raise_if_invalid! resp
       resp
     end
