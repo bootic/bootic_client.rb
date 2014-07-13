@@ -23,7 +23,7 @@ module BooticClient
           new_token = get_token
           client.options[:access_token] = new_token
           on_new_token.call new_token
-          request_and_wrap(:get, href, Entity, payload)
+          wrapper_class.new client.send(request_method, href, payload).body, self
         end
       end
 
