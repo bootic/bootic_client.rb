@@ -18,7 +18,7 @@ describe 'BooticClient::Strategies::Authorized' do
 
   def stub_api_root(access_token, status, body)
     stub_request(:get, "https://api.bootic.net/v1").
-      with(headers: {'Accept'=>'*/*', 'Authorization' => "Bearer #{access_token}"}).
+      with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer #{access_token}"}).
       to_return(status: status, :body => JSON.dump(body))
   end
 

@@ -8,7 +8,7 @@ describe BooticClient::Client do
     let(:root_url) { 'https://api.bootic.net/v1' }
     let(:client) { BooticClient::Client.new(access_token: 'xxx') }
     let(:request_headers) {
-      {'Accept' => 'application/json', 'Content-Type' => 'application/json', 'Authorization' => "Bearer xxx"}
+      {'Accept' => 'application/json', 'Authorization' => "Bearer xxx"}
     }
     let(:response_headers) {
       {'Content-Type' => 'application/json', 'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT'}
