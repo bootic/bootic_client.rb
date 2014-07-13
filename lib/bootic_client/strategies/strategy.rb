@@ -13,17 +13,17 @@ module BooticClient
       end
 
       def root
-        get config.api_root
+        request_and_wrap :get, config.api_root, Entity
       end
 
-      def get(href, query = {})
+      def request_and_wrap(request_method, href, wrapper_class, payload = {})
         begin
-          client.request_and_wrap(:get, href, Entity, query)
+          wrapper_class.new client.send(request_method, href, payload).body, self
         rescue TokenError => e
           new_token = get_token
           client.options[:access_token] = new_token
           on_new_token.call new_token
-          client.request_and_wrap(:get, href, Entity, query)
+          request_and_wrap(:get, href, Entity, payload)
         end
       end
 

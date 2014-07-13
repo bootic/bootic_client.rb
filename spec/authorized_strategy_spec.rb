@@ -45,7 +45,7 @@ describe 'BooticClient::Strategies::Authorized' do
   let(:root_data) {
     {
       '_links' => {
-        'shops' => {'href' => 'https://api.bootic.net/v1/products'}
+        'shops' => {'href' => 'https://api.bootic.net/v1/shops'}
       },
       'message' => "Hello!"
     }
@@ -109,7 +109,7 @@ describe 'BooticClient::Strategies::Authorized' do
         @successful_root_request = stub_api_root('foobar', 200, root_data)
       end
 
-      it 'attempts unauthorised API request, refreshes token from auth an tries again' do
+      it 'attempts unauthorised API request, refreshes token from auth and tries again' do
         root = client.root
         expect(@failed_root_request).to have_been_requested
         expect(@auth_request).to have_been_requested
@@ -119,6 +119,29 @@ describe 'BooticClient::Strategies::Authorized' do
       it 'yields new token to optional block' do
         client.root
         expect(store[:access_token]).to eql('foobar')
+      end
+    end
+
+    context 'expired token, other resources' do
+      before do
+        stub_api_root('abc', 200, root_data)
+        @unauthorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
+          with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer abc"}).
+          to_return(status: 401, :body => JSON.dump(message: 'authorized'))
+        @auth_request = stub_auth('abc', 200, access_token: 'validtoken')
+
+        @authorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
+          with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer validtoken"}).
+          to_return(status: 200, :body => JSON.dump(title: 'All shops'))
+        @root = client.root
+      end
+
+      it 'attempts unauthorized API request to shops, refreshes token and tries again' do
+        shops = @root.shops
+        expect(@unauthorized_request).to have_been_requested
+        expect(@auth_request).to have_been_requested
+        expect(@authorized_request).to have_been_requested
+        expect(shops.title).to eql('All shops')
       end
     end
   end

@@ -123,8 +123,8 @@ describe BooticClient::Client do
 
     end
 
-    describe '#request_and_wrap' do
-      context 'GET' do
+    context 'HTTP verbs' do
+      describe 'GET' do
 
         before do
           stub_request(:get, root_url)
@@ -132,58 +132,47 @@ describe BooticClient::Client do
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
-        it 'wraps JSON response in entity' do
-          wrapper = double('Wrapper Class')
-          entity = double('Entity')
-          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-          expect(client.request_and_wrap(:get, root_url, wrapper, foo: 'bar')).to eql(entity)
+        it 'GETs response' do
+          expect(client.get(root_url, foo: 'bar').body['message']).to eql('Hello!')
         end
       end
 
-      context 'POST' do
+      describe 'POST' do
         before do
           stub_request(:post, root_url)
             .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
             .to_return(status: 201, body: JSON.dump(root_data), headers: response_headers)
         end
 
-        it 'wraps JSON response in entity' do
-          wrapper = double('Wrapper Class')
-          entity = double('Entity')
-          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-          expect(client.request_and_wrap(:post, root_url, wrapper, foo: 'bar')).to eql(entity)
+        it 'POSTs request and parses response' do
+          expect(client.post(root_url, foo: 'bar').body['message']).to eql('Hello!')
         end
       end
  
       [:put, :patch].each do |verb|
-        context verb.to_s.upcase do
+        describe verb.to_s.upcase do
           before do
             stub_request(verb, root_url)
               .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
               .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
           end
 
-          it 'wraps JSON response in entity' do
-            wrapper = double('Wrapper Class')
-            entity = double('Entity')
-            expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-            expect(client.request_and_wrap(verb, root_url, wrapper, foo: 'bar')).to eql(entity)
+          it "#{verb.to_s.upcase}s request and parses response" do
+            expect(client.send(verb, root_url, foo: 'bar').body['message']).to eql('Hello!')
           end
         end
       end
  
       context 'DELETE' do
         before do
-          stub_request(:delete, root_url)
+          @delete_requst = stub_request(:delete, root_url)
             .with(headers: request_headers)
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
-        it 'wraps JSON response in entity' do
-          wrapper = double('Wrapper Class')
-          entity = double('Entity')
-          expect(wrapper).to receive(:new).with(root_data, client).and_return entity
-          expect(client.request_and_wrap(:delete, root_url, wrapper)).to eql(entity)
+        it 'DELETEs request and parses response' do
+          expect(client.send(:delete, root_url).status).to eql(200)
+          expect(@delete_requst).to have_been_requested
         end
       end
  

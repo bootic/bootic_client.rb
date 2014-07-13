@@ -24,10 +24,6 @@ module BooticClient
       conn &block if block_given?
     end
 
-    def request_and_wrap(request_method, href, wrapper_class, payload = {})
-      wrapper_class.new send(request_method, href, payload).body, self
-    end
- 
     def get(href, query = {})
       validated_request!(:get, href) do |req|
         req.params.update(query)
