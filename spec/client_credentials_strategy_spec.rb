@@ -84,12 +84,18 @@ describe 'BooticClient::Strategies::ClientCredentials' do
         root = client.root
         expect(@failed_root_request).to have_been_requested
         expect(@auth_request).to have_been_requested
+        expect(@successful_root_request).to have_been_requested
         expect(root.message).to eql('Hello!')
       end
 
       it 'yields new token to optional block' do
         client.root
         expect(store[:access_token]).to eql('foobar')
+      end
+
+      it 'updates internal access token' do
+        client.root
+        expect(client.options[:access_token]).to eql('foobar')
       end
     end
   end
