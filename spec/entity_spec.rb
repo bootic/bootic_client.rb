@@ -67,6 +67,10 @@ describe BooticClient::Entity do
       expect(entity.page).to eql(1)
     end
 
+    it 'has hash access to properties' do
+      expect(entity[:total_items]).to eql(10)
+    end
+
     it 'wraps object properties as entities' do
       expect(entity.an_object.name).to eql('Foobar')
       expect(entity.an_object.age).to eql(22)
@@ -95,6 +99,10 @@ describe BooticClient::Entity do
           expect(product).to be_kind_of(BooticClient::Entity)
           expect(product.title).to eql('iPhone 4')
         end
+      end
+
+      it 'has hash access to properties' do
+        expect(entity[:total_items]).to eql(10)
       end
 
       it 'recursively builds embedded entities' do
