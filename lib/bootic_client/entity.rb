@@ -16,7 +16,7 @@ module BooticClient
     end
 
     def [](key)
-      properties[key.to_sym]
+      properties[key.to_sym] || entities[key.to_sym]
     end
 
     def has?(prop_name)
