@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/bootic/bootic_client.rb.svg?branch=master)](https://travis-ci.org/bootic/bootic_client.rb)
 [![Gem Version](https://badge.fury.io/rb/bootic_client.svg)](http://badge.fury.io/rb/bootic_client)
 
-## WORK IN PROGRESS
 
 # BooticClient
 
