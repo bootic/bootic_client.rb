@@ -105,7 +105,6 @@ if shop.can?(:create_product)
     title: 'A shiny new product',
     price: 122332,
     status: "visible",
-    collecton_names: ["Featured products", "Homepage"],
     variants: [
       {
         title: 'First variant',
@@ -113,6 +112,10 @@ if shop.can?(:create_product)
         available_if_no_stock: 1,
         stock: 12
       }
+    ],
+    collections: [
+      {title: "A new collection"},
+      {id: 1234}
     ]
   )
 
