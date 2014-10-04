@@ -11,7 +11,12 @@ describe BooticClient::Client do
       {'Accept' => 'application/json', 'Authorization' => "Bearer xxx"}
     }
     let(:response_headers) {
-      {'Content-Type' => 'application/json', 'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT'}
+      {
+        'Content-Type' => 'application/json', 
+        'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT',
+        'ETag' => '0937dafce10db7b7d405667f9576d26d',
+        'Cache-Control' => 'max-age=0, private, must-revalidate'
+      }
     }
     let(:root_data) {
       {
@@ -44,6 +49,24 @@ describe BooticClient::Client do
           before do
             @cached_request = stub_request(:get, root_url)
               .with(headers: {'If-Modified-Since' => 'Sat, 07 Jun 2014 12:10:33 GMT'})
+              .to_return(status: 304, body: '', headers: response_headers)
+          end
+
+          it 'returns cached response' do
+            r = client.get(root_url)
+            expect(@cached_request).to have_been_requested
+
+            expect(r.status).to eql(200)
+            r.body.tap do |b|
+              expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
+            end
+          end
+        end
+
+        context 'and then cached by ETag' do
+          before do
+            @cached_request = stub_request(:get, root_url)
+              .with(headers: {'If-None-Match' => response_headers['ETag']})
               .to_return(status: 304, body: '', headers: response_headers)
           end
 
