@@ -86,6 +86,12 @@ describe BooticClient::Entity do
       expect(entity.has?(:foobar)).to eql(false)
     end
 
+    describe '#to_hash' do
+      it 'returns original data' do
+        expect(entity.to_hash).to eql(list_payload)
+      end
+    end
+
     describe 'embedded entities' do
 
       it 'has a #entities object' do

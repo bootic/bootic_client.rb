@@ -15,6 +15,10 @@ module BooticClient
       build!
     end
 
+    def to_hash
+      @attrs
+    end
+
     def [](key)
       properties[key.to_sym] || entities[key.to_sym]
     end

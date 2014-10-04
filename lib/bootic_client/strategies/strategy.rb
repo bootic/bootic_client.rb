@@ -19,6 +19,10 @@ module BooticClient
         request_and_wrap :get, config.api_root, Entity
       end
 
+      def from_hash(hash, wrapper_class = Entity)
+        wrapper_class.new hash, self
+      end
+
       def request_and_wrap(request_method, href, wrapper_class, payload = {})
         begin
           wrapper_class.new client.send(request_method, href, payload).body, self

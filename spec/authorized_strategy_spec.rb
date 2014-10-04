@@ -144,5 +144,14 @@ describe 'BooticClient::Strategies::Authorized' do
         expect(shops.title).to eql('All shops')
       end
     end
+
+    describe '#from_hash' do
+      it 'builds and returns an entity' do
+        entity = client.from_hash('name' =>  'foo', '_links' => {'delete' => {'href' => '/foo/bar'}}) 
+        expect(entity).to be_kind_of(BooticClient::Entity)
+        expect(entity.name).to eql('foo')
+        expect(entity.can?(:delete)).to be_true
+      end
+    end
   end
 end
