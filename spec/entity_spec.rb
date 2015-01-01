@@ -172,7 +172,7 @@ describe BooticClient::Entity do
     end
 
     describe 'iterating' do
-      it 'is an anumerable if it is a list' do
+      it 'is an enumerable if it is a list' do
         prods = []
         entity.each{|pr| prods << pr}
         expect(prods).to match_array(entity.items)
@@ -207,9 +207,6 @@ describe BooticClient::Entity do
         }
       }
       let(:page_2) { BooticClient::Entity.new(page_2_data, client) }
-
-      before do
-      end
 
       it 'lazily enumerates entries across pages, making as little requests as possible' do
         expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', BooticClient::Entity, {}).and_return page_2

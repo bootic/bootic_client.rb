@@ -52,7 +52,7 @@ if root.has?(:all_products)
     puts product.price
   end
 
-  # Iterate through pages or products
+  # Iterate through pages of products
   # See "iterating" section below for a more elegant option
   if all_products.has?(:next)
     next_page = all_products.next

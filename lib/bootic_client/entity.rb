@@ -2,7 +2,7 @@ require "bootic_client/relation"
 require 'ostruct'
 
 module BooticClient
-  module IterableEntity
+  module EnumerableEntity
     include Enumerable
 
     def each(&block)
@@ -33,7 +33,7 @@ module BooticClient
     def initialize(attrs, client, top = self)
       @attrs, @client, @top = attrs, client, top
       build!
-      self.extend IterableEntity if iterable?
+      self.extend EnumerableEntity if iterable?
     end
 
     def to_hash
