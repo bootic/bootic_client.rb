@@ -150,7 +150,7 @@ describe 'BooticClient::Strategies::Authorized' do
         entity = client.from_hash('name' =>  'foo', '_links' => {'delete' => {'href' => '/foo/bar'}}) 
         expect(entity).to be_kind_of(BooticClient::Entity)
         expect(entity.name).to eql('foo')
-        expect(entity.can?(:delete)).to be_true
+        expect(entity.can?(:delete)).to be true
       end
     end
   end
