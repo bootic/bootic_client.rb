@@ -172,17 +172,18 @@ describe BooticClient::Entity do
     end
 
     describe 'iterating' do
-      it 'iterates items if it is a list' do
+      it 'is an anumerable if it is a list' do
         prods = []
         entity.each{|pr| prods << pr}
         expect(prods).to match_array(entity.items)
+        expect(entity.map{|pr| pr}).to match_array(entity.items)
+        expect(entity.reduce(0){|sum,e| sum + e.price.to_i}).to eql(24687)
+        expect(entity.each).to be_kind_of(Enumerator)
       end
 
-      it 'iterates itself if not a list' do
+      it 'is not treated as an array if not a list' do
         ent = BooticClient::Entity.new({'foo' => 'bar'}, client)
-        ents = []
-        ent.each{|e| ents << e}
-        expect(ents).to match_array([ent])
+        expect(ent).not_to respond_to(:each)
       end
     end
   end
