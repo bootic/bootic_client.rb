@@ -6,5 +6,5 @@ gemspec
 group :test do
   gem 'byebug'
   gem 'vcr', '~> 2.4'
-  gem 'webmock', '>= 1.9'
+  gem 'webmock', '>= 1.20'
 end
