@@ -186,6 +186,39 @@ describe BooticClient::Entity do
         expect(ent).not_to respond_to(:each)
       end
     end
+
+    describe '#full_set' do
+      let(:page_2_data) {
+        {
+          'total_items' => 10,
+          'per_page' => 3,
+          'page' => 2,
+          '_links' => {
+            'self' => {'href' => '/foo?page=2'},
+            'next' => { 'href' => '/foo?page=3'}
+          },
+          "_embedded" => {
+            'items' => [
+              {"title" => "Item 3"},
+              {"title" => "Item 4"},
+              {"title" => "Item 5"}
+            ]
+          }
+        }
+      }
+      let(:page_2) { BooticClient::Entity.new(page_2_data, client) }
+
+      before do
+      end
+
+      it 'lazily enumerates entries across pages, making as little requests as possible' do
+        expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', BooticClient::Entity, {}).and_return page_2
+        expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', BooticClient::Entity, {})
+        results = entity.full_set.first(4)
+        titles = results.map(&:title)
+        expect(titles).to match_array(['iPhone 4', 'iPhone 5', 'Item 3', 'Item 4'])
+      end
+    end
   end
 
 end

@@ -8,6 +8,18 @@ module BooticClient
     def each(&block)
       self[:items].each &block
     end
+
+    def full_set
+      page = self
+
+      Enumerator.new do |yielder|
+        loop do
+          page.each{|item| yielder.yield item }
+          raise StopIteration unless page.has_rel?(:next)
+          page = page.next
+        end
+      end
+    end
   end
 
   class Entity
