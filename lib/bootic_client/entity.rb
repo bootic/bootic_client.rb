@@ -2,6 +2,26 @@ require "bootic_client/relation"
 require 'ostruct'
 
 module BooticClient
+  module EnumerableEntity
+    include Enumerable
+
+    def each(&block)
+      self[:items].each &block
+    end
+
+    def full_set
+      page = self
+
+      Enumerator.new do |yielder|
+        loop do
+          page.each{|item| yielder.yield item }
+          raise StopIteration unless page.has_rel?(:next)
+          page = page.next
+        end
+      end
+    end
+  end
+
   class Entity
 
     CURIE_EXP = /(.+):(.+)/.freeze
@@ -13,6 +33,7 @@ module BooticClient
     def initialize(attrs, client, top = self)
       @attrs, @client, @top = attrs, client, top
       build!
+      self.extend EnumerableEntity if iterable?
     end
 
     def to_hash
@@ -86,10 +107,6 @@ module BooticClient
 
     def has_rel?(prop_name)
       rels.has_key? prop_name.to_sym
-    end
-
-    def each(&block)
-      iterable? ? entities[:items].each(&block) : [self].each(&block)
     end
 
     def rels

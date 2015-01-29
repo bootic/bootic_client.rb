@@ -52,11 +52,39 @@ if root.has?(:all_products)
     puts product.price
   end
 
-  if all_product.has?(:next)
+  # Iterate through pages of products
+  # See "iterating" section below for a more elegant option
+  if all_products.has?(:next)
     next_page = all_products.next
     next_page.each{...}
   end
 end
+```
+
+### Iterating
+
+Entities representing lists of things ([products](https://developers.bootic.net/rels/products/), [orders](https://developers.bootic.net/rels/orders/), etc) are fully [enumerable](http://ruby-doc.org/core-2.2.0/Enumerable.html).
+
+```ruby
+# These will only iterate this page's worth of products
+all_products.each{|pr| puts pr.title}
+all_products.map(&:title)
+all_products.reduce(0){|sum, pr| sum + pr.price}
+```
+
+These lists might be part of a paginated data set. If you want to iterate items across pages and make sure you consume the full set, use `#full_set`.
+
+```ruby
+# These will iterate all necessary pages
+all_products.full_set.each{|pr| puts pr.title }
+all_products.full_set.map(&:title)
+all_products.full_set.first(500)
+```
+
+You can check whether an entity is iterable with:
+
+```ruby
+all_products.respond_to?(:each)
 ```
 
 ## Strategies

@@ -172,17 +172,48 @@ describe BooticClient::Entity do
     end
 
     describe 'iterating' do
-      it 'iterates items if it is a list' do
+      it 'is an enumerable if it is a list' do
         prods = []
         entity.each{|pr| prods << pr}
         expect(prods).to match_array(entity.items)
+        expect(entity.map{|pr| pr}).to match_array(entity.items)
+        expect(entity.reduce(0){|sum,e| sum + e.price.to_i}).to eql(24687)
+        expect(entity.each).to be_kind_of(Enumerator)
       end
 
-      it 'iterates itself if not a list' do
+      it 'is not treated as an array if not a list' do
         ent = BooticClient::Entity.new({'foo' => 'bar'}, client)
-        ents = []
-        ent.each{|e| ents << e}
-        expect(ents).to match_array([ent])
+        expect(ent).not_to respond_to(:each)
+      end
+    end
+
+    describe '#full_set' do
+      let(:page_2_data) {
+        {
+          'total_items' => 10,
+          'per_page' => 3,
+          'page' => 2,
+          '_links' => {
+            'self' => {'href' => '/foo?page=2'},
+            'next' => { 'href' => '/foo?page=3'}
+          },
+          "_embedded" => {
+            'items' => [
+              {"title" => "Item 3"},
+              {"title" => "Item 4"},
+              {"title" => "Item 5"}
+            ]
+          }
+        }
+      }
+      let(:page_2) { BooticClient::Entity.new(page_2_data, client) }
+
+      it 'lazily enumerates entries across pages, making as little requests as possible' do
+        expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', BooticClient::Entity, {}).and_return page_2
+        expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', BooticClient::Entity, {})
+        results = entity.full_set.first(4)
+        titles = results.map(&:title)
+        expect(titles).to match_array(['iPhone 4', 'iPhone 5', 'Item 3', 'Item 4'])
       end
     end
   end
