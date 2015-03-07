@@ -12,7 +12,7 @@ describe 'BooticClient::Strategies::Authorized' do
       iss: client_id,
       aud: 'api',
       prn: expired_token,
-      exp: now.utc.to_i + 5
+      exp: now.utc.to_i + 30
     }, client_secret, 'HS256')
   end
 
@@ -28,11 +28,11 @@ describe 'BooticClient::Strategies::Authorized' do
 
     stub_request(:post, "https://auth.bootic.net/oauth/token").
       with(body: {
-        "assertion" => jwt_assertion(expired_token, now), 
+        "assertion" => jwt_assertion(expired_token, now),
         "assertion_type" => "urn:ietf:params:oauth:grant-type:jwt-bearer",
         "client_id" => "",
-        "client_secret" => "", 
-        "grant_type" => "assertion", 
+        "client_secret" => "",
+        "grant_type" => "assertion",
         "scope"=>""
       },
       headers: {
@@ -147,7 +147,7 @@ describe 'BooticClient::Strategies::Authorized' do
 
     describe '#from_hash' do
       it 'builds and returns an entity' do
-        entity = client.from_hash('name' =>  'foo', '_links' => {'delete' => {'href' => '/foo/bar'}}) 
+        entity = client.from_hash('name' =>  'foo', '_links' => {'delete' => {'href' => '/foo/bar'}})
         expect(entity).to be_kind_of(BooticClient::Entity)
         expect(entity.name).to eql('foo')
         expect(entity.can?(:delete)).to be true

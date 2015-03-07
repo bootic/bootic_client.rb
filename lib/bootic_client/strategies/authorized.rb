@@ -11,9 +11,9 @@ module BooticClient
       end
 
       def get_token
-        # The JWT grant must have an expiration date, in seconds since the epoch. 
+        # The JWT grant must have an expiration date, in seconds since the epoch.
         # For most cases a few seconds should be enough.
-        exp = Time.now.utc.to_i + 5
+        exp = Time.now.utc.to_i + 30
 
         # Use the "assertion" flow to exchange the JWT grant for an access token
         access_token = auth.assertion.get_token(
