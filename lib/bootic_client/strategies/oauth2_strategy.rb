@@ -3,7 +3,7 @@ require 'bootic_client/strategies/strategy'
 
 module BooticClient
   module Strategies
- 
+
     class Oauth2Strategy < Strategy
 
       def inspect
