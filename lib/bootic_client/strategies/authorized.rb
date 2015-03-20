@@ -1,12 +1,12 @@
-require 'bootic_client/strategies/strategy'
+require 'bootic_client/strategies/oauth2_strategy'
 
 module BooticClient
   module Strategies
 
-    class Authorized < Strategy
+    class Authorized < Oauth2Strategy
       protected
 
-      def validate!(options)
+      def validate!
         raise "options MUST include access_token" unless options[:access_token]
       end
 
