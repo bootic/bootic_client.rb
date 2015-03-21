@@ -23,11 +23,12 @@ describe 'BooticClient::Strategies::BasicAuth' do
       expect(client.inspect).to eql %(#<BooticClient::Strategies::BasicAuth root: https://api.bootic.net/v1 username: foo>)
     end
   end
+
   context 'with missing credentials' do
     it 'raises error' do
       expect{
         BooticClient.client(:basic_auth)
-      }.to raise_error
+      }.to raise_error(ArgumentError)
     end
   end
 
