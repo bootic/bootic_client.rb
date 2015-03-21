@@ -18,7 +18,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
       BooticClient.client_id = nil
       expect{
         BooticClient.client(:client_credentials, scope: 'admin')
-      }.to raise_error
+      }.to raise_error(ArgumentError)
     end
   end
 

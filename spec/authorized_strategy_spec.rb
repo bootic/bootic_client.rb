@@ -55,7 +55,7 @@ describe 'BooticClient::Strategies::Authorized' do
     it 'raises error' do
       expect{
         BooticClient.client(:authorized)
-      }.to raise_error
+      }.to raise_error(ArgumentError)
     end
   end
 
@@ -63,7 +63,7 @@ describe 'BooticClient::Strategies::Authorized' do
     it 'raises error' do
       expect{
         BooticClient.client(:authorized)
-      }.to raise_error
+      }.to raise_error(ArgumentError)
     end
   end
 

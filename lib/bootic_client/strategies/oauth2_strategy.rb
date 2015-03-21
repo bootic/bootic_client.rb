@@ -13,9 +13,9 @@ module BooticClient
       protected
 
       def validate!
-        raise "MUST include client_id" unless config.client_id
-        raise "MUST include client_secret" unless config.client_secret
-        raise "MUST include api_root" unless config.api_root
+        raise ArgumentError, "MUST include client_id" unless config.client_id
+        raise ArgumentError, "MUST include client_secret" unless config.client_secret
+        raise ArgumentError, "MUST include api_root" unless config.api_root
       end
 
       def pre_flight
