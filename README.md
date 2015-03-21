@@ -115,6 +115,20 @@ client = BooticClient.client(:client_credentials, scope: 'admin', access_token: 
 end
 ```
 
+### 3. Basic Auth
+
+This strategy uses a `username` and `password` against APIs supporting HTTP's Basic Authentication scheme.
+
+The official Bootic API only supports OAuth2 tokens, but this allows the client to be used against internal APIs or stub APIs on development.
+
+```ruby
+client = BooticClient.client(:basic_auth, username: 'foo', password: 'bar')
+
+root = client.root # etc
+```
+
+NOTE: `username` and `password` have nothing to do with your Bootic administrative credentials, and will be up to API maintainers to define.
+
 ## Non GET links
 
 Most resource links lead to `GET` resources, but some will expect `POST`, `PUT`, `DELETE` or others.
