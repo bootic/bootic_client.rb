@@ -186,6 +186,23 @@ BooticClient.configure do |c|
 end
 ```
 
+## Pre-loaded or custom root resources
+
+This client is designed to always navigate APIs starting from the root endpoint (the Hypermedia approach), but it's also possible to skip the root and start from a locally defined resource definition.
+
+```ruby
+messaging_api = client.from_hash(
+  _links: {
+    send_message: {href: 'https://some.api.com/messages', method: 'post'},
+    delete_message: {href: 'https://some.api.com/messages/:id', method: 'delete', templated: true}
+  }
+)
+
+new_message = messaging_api.send_message(title: 'This is a new message')
+
+messaging_api.delete_message(id: new_message.id)
+```
+
 ## Contributing
 
 1. Fork it
