@@ -1,10 +1,11 @@
-require 'bootic_client/strategies/strategy'
+require 'bootic_client/strategies/oauth2_strategy'
 
 module BooticClient
   module Strategies
 
-    class ClientCredentials < Strategy
+    class ClientCredentials < Oauth2Strategy
       protected
+
       def get_token
         opts = {}
         opts['scope'] = options.delete(:scope) if options[:scope]

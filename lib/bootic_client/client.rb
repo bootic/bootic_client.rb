@@ -15,7 +15,6 @@ module BooticClient
 
     def initialize(options = {}, &block)
       @options = {
-        access_token: nil,
         logging: false
       }.merge(options.dup)
 
@@ -24,32 +23,38 @@ module BooticClient
       conn &block if block_given?
     end
 
-    def get(href, query = {})
+    def get(href, query = {}, headers = {})
       validated_request!(:get, href) do |req|
+        req.headers.update headers
         req.params.update(query)
       end
     end
 
-    def post(href, payload = {})
+    def post(href, payload = {}, headers = {})
       validated_request!(:post, href) do |req|
+        req.headers.update headers
         req.body = JSON.dump(payload)
       end
     end
 
-    def put(href, payload = {})
+    def put(href, payload = {}, headers = {})
       validated_request!(:put, href) do |req|
+        req.headers.update headers
         req.body = JSON.dump(payload)
       end
     end
 
-    def patch(href, payload = {})
+    def patch(href, payload = {}, headers = {})
       validated_request!(:patch, href) do |req|
+        req.headers.update headers
         req.body = JSON.dump(payload)
       end
     end
 
-    def delete(href, query = {})
-      validated_request!(:delete, href)
+    def delete(href, headers = {})
+      validated_request!(:delete, href) do |req|
+        req.headers.update headers
+      end
     end
 
     protected
@@ -69,7 +74,6 @@ module BooticClient
 
     def request_headers
       {
-        'Authorization' => "Bearer #{options[:access_token]}",
         'User-Agent' => USER_AGENT,
         'Accept' => JSON_MIME,
         'Content-Type' => JSON_MIME
@@ -77,7 +81,6 @@ module BooticClient
     end
 
     def validated_request!(verb, href, &block)
-      validate_request!
       resp = conn.send(verb) do |req|
         req.url href
         req.headers.update request_headers
@@ -86,10 +89,6 @@ module BooticClient
 
       raise_if_invalid! resp
       resp
-    end
-
-    def validate_request!
-      raise NoAccessTokenError, "Missing access token" unless options[:access_token]
     end
 
     def raise_if_invalid!(resp)

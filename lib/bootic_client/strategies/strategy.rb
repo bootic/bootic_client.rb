@@ -1,5 +1,3 @@
-require 'oauth2'
-
 module BooticClient
   module Strategies
     class Strategy
@@ -8,11 +6,7 @@ module BooticClient
 
       def initialize(config, client_opts = {}, &on_new_token)
         @config, @options, @on_new_token = config, client_opts, (on_new_token || Proc.new{})
-        raise "MUST include client_id" unless config.client_id
-        raise "MUST include client_secret" unless config.client_secret
-        raise "MUST include api_root" unless config.api_root
-        validate! @options
-        reset!
+        validate!
       end
 
       def root
@@ -24,43 +18,56 @@ module BooticClient
       end
 
       def request_and_wrap(request_method, href, wrapper_class, payload = {})
-        begin
-          wrapper_class.new client.send(request_method, href, payload).body, self
-        rescue TokenError => e
-          new_token = get_token
-          options[:access_token] = new_token
-          reset!
-          on_new_token.call new_token
-          wrapper_class.new client.send(request_method, href, payload).body, self
+        pre_flight
+        retryable do
+          wrapper_class.new client.send(request_method, href, payload, request_headers).body, self
         end
       end
 
       def inspect
-        %(#<#{self.class.name} cid: #{config.client_id} root: #{config.api_root} auth: #{config.auth_host}>)
+        %(#<#{self.class.name} root: #{config.api_root}>)
       end
 
       protected
 
-      attr_reader :config, :on_new_token, :client
+      attr_reader :config, :on_new_token
 
-      def validate!(options)
-        
+      def validate!
+        # Overwrite in sub classes
+        # to raise ArgumentErrors on
+        # missing config attributes of options values.
       end
 
-      def get_token
-        raise "Implement this in subclasses"
+      def pre_flight
+        # Runs before every request
+        # Overwrite in sub classes to run checks
+        # (ie authorisation status, missing options, expired token refresh)
       end
 
-      def auth
-        @auth ||= OAuth2::Client.new(
-          config.client_id,
-          config.client_secret,
-          site: config.auth_host
-        )
+      # Noop.
+      # Overwrite in sub classes to implement retryable requests.
+      # Example:
+      #
+      #   def retryable(&block)
+      #      begin
+      #        yield # issue request
+      #      rescue SomeException => e
+      #        fix_cause_of_exception
+      #        yield # try again
+      #      end
+      #   end
+      #
+      def retryable(&block)
+        yield
       end
 
-      def reset!
-        @client = Client.new(options)
+      # Noop. Merge these headers into every request.
+      def request_headers
+        {}
+      end
+
+      def client
+        @client ||= Client.new(options)
       end
     end
   end

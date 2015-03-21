@@ -6,9 +6,9 @@ describe BooticClient::Client do
 
   describe 'valid response' do
     let(:root_url) { 'https://api.bootic.net/v1' }
-    let(:client) { BooticClient::Client.new(access_token: 'xxx') }
+    let(:client) { BooticClient::Client.new }
     let(:request_headers) {
-      {'Accept' => 'application/json', 'Authorization' => "Bearer xxx"}
+      {'Authorization' => "Bearer xxx"}
     }
     let(:response_headers) {
       {
@@ -35,7 +35,7 @@ describe BooticClient::Client do
             .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
         end
 
-        let!(:response) { client.get(root_url) }
+        let!(:response) { client.get(root_url, {}, request_headers) }
 
         it 'returns parsed Faraday response' do
           expect(response).to be_kind_of(Faraday::Response)
@@ -53,7 +53,7 @@ describe BooticClient::Client do
           end
 
           it 'returns cached response' do
-            r = client.get(root_url)
+            r = client.get(root_url, {}, request_headers)
             expect(@cached_request).to have_been_requested
 
             expect(r.status).to eql(200)
@@ -71,7 +71,7 @@ describe BooticClient::Client do
           end
 
           it 'returns cached response' do
-            r = client.get(root_url)
+            r = client.get(root_url, {}, request_headers)
             expect(@cached_request).to have_been_requested
 
             expect(r.status).to eql(200)
@@ -83,14 +83,6 @@ describe BooticClient::Client do
       end
 
       context 'errors' do
-        describe 'no access token' do
-          it 'raises error' do
-            expect{
-              BooticClient::Client.new.get(root_url)
-            }.to raise_error(BooticClient::NoAccessTokenError)
-          end
-        end
-
         describe '500 Server error' do
           before do
             stub_request(:get, root_url)
@@ -156,7 +148,7 @@ describe BooticClient::Client do
         end
 
         it 'GETs response' do
-          expect(client.get(root_url, foo: 'bar').body['message']).to eql('Hello!')
+          expect(client.get(root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
         end
       end
 
@@ -168,7 +160,7 @@ describe BooticClient::Client do
         end
 
         it 'POSTs request and parses response' do
-          expect(client.post(root_url, foo: 'bar').body['message']).to eql('Hello!')
+          expect(client.post(root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
         end
       end
  
@@ -181,7 +173,7 @@ describe BooticClient::Client do
           end
 
           it "#{verb.to_s.upcase}s request and parses response" do
-            expect(client.send(verb, root_url, foo: 'bar').body['message']).to eql('Hello!')
+            expect(client.send(verb, root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
           end
         end
       end
@@ -194,7 +186,7 @@ describe BooticClient::Client do
         end
 
         it 'DELETEs request and parses response' do
-          expect(client.send(:delete, root_url).status).to eql(200)
+          expect(client.send(:delete, root_url, request_headers).status).to eql(200)
           expect(@delete_requst).to have_been_requested
         end
       end
