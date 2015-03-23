@@ -206,9 +206,9 @@ This client is designed to always navigate APIs starting from the root endpoint 
 
 ```ruby
 messaging_api = client.from_hash(
-  _links: {
-    send_message: {href: 'https://some.api.com/messages', method: 'post'},
-    delete_message: {href: 'https://some.api.com/messages/:id', method: 'delete', templated: true}
+  "_links" => {
+    "send_message" => {"href" => 'https://some.api.com/messages', "method" => 'post'},
+    "delete_message" => {href" => 'https://some.api.com/messages/:id', "method" => 'delete', "templated" => true}
   }
 )
 
