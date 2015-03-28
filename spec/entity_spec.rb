@@ -29,6 +29,7 @@ describe BooticClient::Entity do
           {
             'title' => 'iPhone 4',
             'price' => 12345,
+            'published' => false,
             '_links' => {
               'self' => {href: '/products/iphone4'},
               'btc:delete_product' => {'href' => '/products/12345'}
@@ -43,6 +44,7 @@ describe BooticClient::Entity do
           {
             'title' => 'iPhone 5',
             'price' => 12342,
+            'published' => true,
             '_links' => {
               'self' => {href: '/products/iphone5'}
             },
@@ -52,7 +54,7 @@ describe BooticClient::Entity do
               }
             }
           }
-          
+
         ] # / items
       }
     }
@@ -117,6 +119,11 @@ describe BooticClient::Entity do
           expect(shop).to be_kind_of(BooticClient::Entity)
           expect(shop.name).to eql('Acme')
         end
+      end
+
+      it 'includes FALSE values' do
+        expect(entity.items.first.published).to be false
+        expect(entity.items.last.published).to be true
       end
     end #/ embedded entities
 
