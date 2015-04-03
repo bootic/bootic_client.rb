@@ -45,7 +45,11 @@ module BooticClient
 
     def run(opts = {})
       if templated?
-        client.request_and_wrap transport_method.to_sym, uri.expand(opts), wrapper_class, opts
+        uri_vars = uri.variables
+        payload = opts.each_with_object({}) do |(k,v),memo|
+          memo[k] = v unless uri_vars.include?(k.to_s)
+        end
+        client.request_and_wrap transport_method.to_sym, uri.expand(opts), wrapper_class, payload
       else
         client.request_and_wrap transport_method.to_sym, href, wrapper_class, opts
       end

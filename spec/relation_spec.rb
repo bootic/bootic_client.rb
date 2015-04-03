@@ -48,8 +48,8 @@ describe BooticClient::Relation do
         end
 
         it 'interpolates tokens' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', BooticClient::Entity, {id:2,q:'test',page:2}).and_return entity
-          expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', BooticClient::Entity, {other: 'other'}).and_return entity
+          expect(relation.run(id: 2, q: 'test', page: 2, other: 'other')).to eql(entity)
         end
       end
     end
@@ -62,9 +62,9 @@ describe BooticClient::Relation do
         client.stub(:request_and_wrap).with(:post, '/foo/bars', BooticClient::Entity, {}).and_return entity
         expect(relation.run).to eql(entity)
       end
- 
+
       it 'interpolates templated URLs' do
-        client.stub(:request_and_wrap).with(:post, '/foo/123', BooticClient::Entity, {foo: 'bar', bars: 123}).and_return entity
+        client.stub(:request_and_wrap).with(:post, '/foo/123', BooticClient::Entity, {foo: 'bar'}).and_return entity
         expect(relation_templated.run(bars: 123, foo: 'bar')).to eql(entity)
       end
     end
