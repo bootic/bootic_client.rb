@@ -22,7 +22,7 @@ module BooticClient
     end
   end
 
-  class Entity
+  class EntityData
 
     CURIE_EXP = /(.+):(.+)/.freeze
     CURIES_REL = 'curies'.freeze
@@ -30,31 +30,12 @@ module BooticClient
 
     attr_reader :curies, :entities
 
-    def initialize(attrs, client, top = self)
+    def initialize(attrs, client, top)
       @attrs, @client, @top = attrs, client, top
-      build!
-      self.extend EnumerableEntity if iterable?
     end
 
     def to_hash
       @attrs
-    end
-
-    def [](key)
-      key = key.to_sym
-      has_property?(key) ? properties[key] : entities[key]
-    end
-
-    def has?(prop_name)
-      has_property?(prop_name) || has_entity?(prop_name) || has_rel?(prop_name)
-    end
-
-    def can?(rel_name)
-      has_rel? rel_name
-    end
-
-    def inspect
-      %(#<#{self.class.name} props: [#{properties.keys.join(', ')}] rels: [#{rels.keys.join(', ')}] entities: [#{entities.keys.join(', ')}]>)
     end
 
     def properties
@@ -65,49 +46,6 @@ module BooticClient
 
     def links
       @links ||= attrs.fetch('_links', {})
-    end
-
-    def self.wrap(obj)
-      case obj
-      when Hash
-        OpenStruct.new(obj)
-      when Array
-        obj.map{|e| wrap(e)}
-      else
-        obj
-      end
-    end
-
-    def method_missing(name, *args, &block)
-      if !block_given?
-        if has_property?(name)
-          self[name]
-        elsif has_entity?(name)
-          entities[name]
-        elsif has_rel?(name)
-          rels[name].run(*args)
-        else
-          super
-        end
-      else
-        super
-      end
-    end
-
-    def respond_to_missing?(method_name, include_private = false)
-      has?(method_name)
-    end
-
-    def has_property?(prop_name)
-      properties.has_key? prop_name.to_sym
-    end
-
-    def has_entity?(prop_name)
-      entities.has_key? prop_name.to_sym
-    end
-
-    def has_rel?(prop_name)
-      rels.has_key? prop_name.to_sym
     end
 
     def rels
@@ -128,16 +66,8 @@ module BooticClient
       )
     end
 
-    protected
-
-    attr_reader :client, :top, :attrs
-
-    def iterable?
-      has_entity?(:items) && entities[:items].respond_to?(:each)
-    end
-
     def build!
-      @curies = top.links.fetch('curies', [])
+      @curies = top._data.links.fetch('curies', [])
 
       @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
         memo[k.to_sym] = if v.kind_of?(Array)
@@ -147,5 +77,88 @@ module BooticClient
         end
       end
     end
+
+    private
+
+    attr_reader :client, :top, :attrs
+
+  end
+
+  class Entity
+
+    attr_reader :_data
+
+    def initialize(attrs, client, top = self)
+      @_data = EntityData.new(attrs, client, top)
+      @_data.build!
+      self.extend EnumerableEntity if iterable?
+    end
+
+    def [](key)
+      key = key.to_sym
+      has_property?(key) ? self._data.properties[key] : self._data.entities[key]
+    end
+
+    def has?(prop_name)
+      has_property?(prop_name) || has_entity?(prop_name) || has_rel?(prop_name)
+    end
+
+    def can?(rel_name)
+      has_rel? rel_name
+    end
+
+    def inspect
+      %(#<#{self.class.name} props: [#{self._data.properties.keys.join(', ')}] rels: [#{self._data.rels.keys.join(', ')}] entities: [#{self._data.entities.keys.join(', ')}]>)
+    end
+
+    def self.wrap(obj)
+      case obj
+      when Hash
+        OpenStruct.new(obj)
+      when Array
+        obj.map{|e| wrap(e)}
+      else
+        obj
+      end
+    end
+
+    def method_missing(name, *args, &block)
+      if !block_given?
+        if has_property?(name)
+          self[name]
+        elsif has_entity?(name)
+          self._data.entities[name]
+        elsif has_rel?(name)
+          self._data.rels[name].run(*args)
+        else
+          super
+        end
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method_name, include_private = false)
+      has?(method_name)
+    end
+
+    def has_property?(prop_name)
+      self._data.properties.has_key? prop_name.to_sym
+    end
+
+    def has_entity?(prop_name)
+      self._data.entities.has_key? prop_name.to_sym
+    end
+
+    def has_rel?(prop_name)
+      self._data.rels.has_key? prop_name.to_sym
+    end
+
+    protected
+
+    def iterable?
+      has_entity?(:items) && self._data.entities[:items].respond_to?(:each)
+    end
+
   end
 end

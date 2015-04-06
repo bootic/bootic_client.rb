@@ -161,7 +161,7 @@ if shop.can?(:create_product)
     ]
   )
 
-  puts product.rels[:web].href # => 'http://acme.bootic.net/products/a-shiny-new-product'
+  puts product._data.rels[:web].href # => 'http://acme.bootic.net/products/a-shiny-new-product'
 end
 ```
 
@@ -171,7 +171,15 @@ All resource link relations include a "docs" URL so you can learn more about tha
 
 ```ruby
 shop = root.shops.first
-puts shop.rels[:create_product].docs # => 'https://developers.bootic.net/rels/create_product'
+puts shop._data.rels[:create_product].docs # => 'https://developers.bootic.net/rels/create_product'
+```
+
+## Entity#to_hash
+
+You can get the original Hash data with
+
+```ruby
+hash = shop._data.to_hash
 ```
 
 ## Cache storage

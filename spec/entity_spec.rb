@@ -78,27 +78,29 @@ describe BooticClient::Entity do
       expect(entity.an_object.age).to eql(22)
     end
 
-    it 'has a #properties object' do
-      expect(entity.properties[:total_items]).to eql(10)
-    end
-
     it 'responds to #has?' do
       expect(entity.has?(:total_items)).to eql(true)
       expect(entity.has?(:items)).to eql(true)
       expect(entity.has?(:foobar)).to eql(false)
     end
 
-    describe '#to_hash' do
-      it 'returns original data' do
-        expect(entity.to_hash).to eql(list_payload)
+    describe '#_data' do
+      it 'has a #properties object' do
+        expect(entity._data.properties[:total_items]).to eql(10)
+      end
+
+      describe '#to_hash' do
+        it 'returns original data' do
+          expect(entity._data.to_hash).to eql(list_payload)
+        end
       end
     end
 
     describe 'embedded entities' do
 
-      it 'has a #entities object' do
-        expect(entity.entities[:items]).to be_a(Array)
-        expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
+      it 'has a #_data.entities object' do
+        expect(entity._data.entities[:items]).to be_a(Array)
+        expect(entity._data.entities[:items].first._data.entities[:shop]).to be_kind_of(BooticClient::Entity)
       end
 
       it 'are exposed like normal attributes' do
@@ -138,22 +140,22 @@ describe BooticClient::Entity do
       end
 
       it 'builds relation objects' do
-        expect(entity.rels[:next]).to be_kind_of(BooticClient::Relation)
-        expect(entity.rels[:next].href).to eql('/foo?page=2')
+        expect(entity._data.rels[:next]).to be_kind_of(BooticClient::Relation)
+        expect(entity._data.rels[:next].href).to eql('/foo?page=2')
       end
 
       it 'understands namespaced cURIes' do
-        expect(entity.rels[:products]).to be_kind_of(BooticClient::Relation)
-        expect(entity.rels[:products].href).to eql('/all/products')
+        expect(entity._data.rels[:products]).to be_kind_of(BooticClient::Relation)
+        expect(entity._data.rels[:products].href).to eql('/all/products')
       end
 
       it 'adds docs if cURIes available' do
-        expect(entity.rels[:products].docs).to eql('https://developers.bootic.net/rels/products')
+        expect(entity._data.rels[:products].docs).to eql('https://developers.bootic.net/rels/products')
       end
 
       it 'adds docs if cURIes available even in nested entities' do
         prod = entity.items.first
-        expect(prod.rels[:delete_product].docs).to eql('https://developers.bootic.net/rels/delete_product')
+        expect(prod._data.rels[:delete_product].docs).to eql('https://developers.bootic.net/rels/delete_product')
       end
 
       context 'eagerly fetching rels' do
