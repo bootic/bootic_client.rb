@@ -225,3 +225,17 @@ messaging_api.delete_message(id: new_message.id)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+## Release
+
+Bump version.rb and
+
+```
+bundle exec rake release
+```
+
+Update, commit and push changelog:
+
+```
+github_changelog_generator -u bootic -p bootic_client.rb
+```
+
