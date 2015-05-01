@@ -68,5 +68,14 @@ describe BooticClient::Relation do
         expect(relation_templated.run(bars: 123, foo: 'bar')).to eql(entity)
       end
     end
+
+    describe 'DELETE' do
+      let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'delete'}, client) }
+
+      it 'DELETEs data and returns resulting entity' do
+        client.stub(:request_and_wrap).with(:delete, '/foo/bars', BooticClient::Entity, {}).and_return entity
+        expect(relation.run).to eql(entity)
+      end
+    end
   end
 end

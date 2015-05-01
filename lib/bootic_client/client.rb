@@ -51,7 +51,7 @@ module BooticClient
       end
     end
 
-    def delete(href, headers = {})
+    def delete(href, _ = {}, headers = {})
       validated_request!(:delete, href) do |req|
         req.headers.update headers
       end

@@ -163,7 +163,7 @@ describe BooticClient::Client do
           expect(client.post(root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
         end
       end
- 
+
       [:put, :patch].each do |verb|
         describe verb.to_s.upcase do
           before do
@@ -177,7 +177,7 @@ describe BooticClient::Client do
           end
         end
       end
- 
+
       context 'DELETE' do
         before do
           @delete_requst = stub_request(:delete, root_url)
@@ -186,13 +186,12 @@ describe BooticClient::Client do
         end
 
         it 'DELETEs request and parses response' do
-          expect(client.send(:delete, root_url, request_headers).status).to eql(200)
+          expect(client.send(:delete, root_url, {}, request_headers).status).to eql(200)
           expect(@delete_requst).to have_been_requested
         end
       end
- 
-    end
 
+    end
 
   end
 end
