@@ -1,5 +1,9 @@
 # Change Log
 
+## [v0.0.9](https://github.com/bootic/bootic_client.rb/tree/v0.0.9) (2015-05-01)
+
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.8...v0.0.9)
+
 ## [v0.0.8](https://github.com/bootic/bootic_client.rb/tree/v0.0.8) (2015-04-06)
 
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.7...v0.0.8)
