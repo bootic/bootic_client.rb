@@ -23,6 +23,10 @@ module BooticClient
       !!attrs['templated']
     end
 
+    def parameters
+      @parameters ||= templated? ? uri.variables : []
+    end
+
     def name
       attrs['name']
     end

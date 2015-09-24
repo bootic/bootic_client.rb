@@ -29,6 +29,10 @@ describe BooticClient::Relation do
           expect(relation.templated?).to eql(false)
         end
 
+        it 'does not have parameters' do
+          expect(relation.parameters).to eql []
+        end
+
         it 'passes query string to client' do
           expect(client).to receive(:request_and_wrap).with(:get, '/foos/bar', BooticClient::Entity, id: 2, q: 'test', page: 2).and_return entity
           expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
@@ -45,6 +49,10 @@ describe BooticClient::Relation do
         it 'works with defaults' do
           expect(client).to receive(:request_and_wrap).with(:get, '/foos/', BooticClient::Entity, {}).and_return entity
           expect(relation.run).to eql(entity)
+        end
+
+        it 'has parameter list' do
+          expect(relation.parameters).to eql ['id', 'q', 'page']
         end
 
         it 'interpolates tokens' do
