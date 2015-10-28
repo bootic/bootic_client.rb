@@ -31,7 +31,8 @@ module BooticClient
     attr_reader :curies, :entities
 
     def initialize(attrs, client, top = self)
-      @attrs, @client, @top = attrs, client, top
+      @attrs = attrs.kind_of?(Hash) ? attrs : {}
+      @client, @top = client, top
       build!
       self.extend EnumerableEntity if iterable?
     end

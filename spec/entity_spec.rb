@@ -225,4 +225,16 @@ describe BooticClient::Entity do
     end
   end
 
+  context 'empty response' do
+    it 'does not break if response is nil' do
+      entity = BooticClient::Entity.new(nil, client)
+      expect(entity.links).to eql({})
+    end
+
+    it 'does not break if response is empty string' do
+      entity = BooticClient::Entity.new('', client)
+      expect(entity.links).to eql({})
+    end
+  end
+
 end
