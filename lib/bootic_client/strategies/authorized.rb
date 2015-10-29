@@ -21,14 +21,15 @@ module BooticClient
           iss: config.client_id,
           prn: client.options[:access_token],
           aud: 'api',
-          exp: exp
+          exp: exp,
+          scope: ''
         )
 
         access_token.token
       end
 
       def auth
-        @auth ||= OAuth2::Client.new(nil, nil, site: config.auth_host)
+        @auth ||= OAuth2::Client.new('', '', site: config.auth_host)
       end
     end
 

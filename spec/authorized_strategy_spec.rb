@@ -22,7 +22,7 @@ describe 'BooticClient::Strategies::Authorized' do
       to_return(status: status, :body => JSON.dump(body))
   end
 
-  def stub_auth(expired_token, status, body)
+  def stub_auth(expired_token, status, body, client_id: '', client_secret: '', scope: '')
     now = Time.now
     Time.stub(:now).and_return now
 
@@ -30,10 +30,10 @@ describe 'BooticClient::Strategies::Authorized' do
       with(body: {
         "assertion" => jwt_assertion(expired_token, now),
         "assertion_type" => "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "client_id" => "",
-        "client_secret" => "",
+        "client_id" => client_id,
+        "client_secret" => client_secret,
         "grant_type" => "assertion",
-        "scope"=>""
+        "scope"=>scope
       },
       headers: {
         'Content-Type'=>'application/x-www-form-urlencoded'
