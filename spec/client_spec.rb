@@ -12,10 +12,11 @@ describe BooticClient::Client do
     }
     let(:response_headers) {
       {
-        'Content-Type' => 'application/json', 
+        'Content-Type' => 'application/json',
         'Last-Modified' => 'Sat, 07 Jun 2014 12:10:33 GMT',
         'ETag' => '0937dafce10db7b7d405667f9576d26d',
-        'Cache-Control' => 'max-age=0, private, must-revalidate'
+        'Cache-Control' => 'max-age=0, private, must-revalidate',
+        'Vary' => 'Acept-Encoding,Authorization'
       }
     }
     let(:root_data) {
@@ -28,6 +29,37 @@ describe BooticClient::Client do
     }
 
     describe '#get' do
+      def assert_successful_response(response)
+        expect(response).to be_kind_of(Faraday::Response)
+        expect(response.status).to eql(200)
+        response.body.tap do |b|
+          expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
+        end
+      end
+
+      context 'switching cache key as per Vary header' do
+        let!(:req) {
+          stub_request(:get, root_url)
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers.merge('Cache-Control' => 'max-age=100'))
+        }
+
+        before do
+          client.get(root_url, {}, request_headers.merge('Authorization' => 'Bearer aaa'))
+        end
+
+        it 'is cached when using the same authorization' do
+          resp = client.get(root_url, {}, request_headers.merge('Authorization' => 'Bearer aaa'))
+          expect(req).to have_been_requested.once
+          assert_successful_response resp
+        end
+
+        it 'is not cached when using a different authorization' do
+          resp = client.get(root_url, {}, request_headers.merge('Authorization' => 'Bearer bbb'))
+          expect(req).to have_been_requested.twice
+          assert_successful_response resp
+        end
+
+      end
 
       context 'fresh' do
         before do
@@ -38,11 +70,7 @@ describe BooticClient::Client do
         let!(:response) { client.get(root_url, {}, request_headers) }
 
         it 'returns parsed Faraday response' do
-          expect(response).to be_kind_of(Faraday::Response)
-          expect(response.status).to eql(200)
-          response.body.tap do |b|
-            expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
-          end
+          assert_successful_response response
         end
 
         context 'and then cached' do
@@ -53,13 +81,10 @@ describe BooticClient::Client do
           end
 
           it 'returns cached response' do
-            r = client.get(root_url, {}, request_headers)
+            resp = client.get(root_url, {}, request_headers)
             expect(@cached_request).to have_been_requested
 
-            expect(r.status).to eql(200)
-            r.body.tap do |b|
-              expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
-            end
+            assert_successful_response resp
           end
         end
 
@@ -71,15 +96,13 @@ describe BooticClient::Client do
           end
 
           it 'returns cached response' do
-            r = client.get(root_url, {}, request_headers)
+            resp = client.get(root_url, {}, request_headers)
             expect(@cached_request).to have_been_requested
 
-            expect(r.status).to eql(200)
-            r.body.tap do |b|
-              expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
-            end
+            assert_successful_response resp
           end
         end
+
       end
 
       context 'errors' do
