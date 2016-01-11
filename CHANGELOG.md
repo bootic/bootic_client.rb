@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.12](https://github.com/bootic/bootic_client.rb/tree/v0.0.12) (2016-01-11)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.11...v0.0.12)
+
+**Merged pull requests:**
+
+- Faraday http cache 1.2.2, Vary header support. [\#4](https://github.com/bootic/bootic_client.rb/pull/4) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.11](https://github.com/bootic/bootic_client.rb/tree/v0.0.11) (2015-10-28)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.10...v0.0.11)
 
