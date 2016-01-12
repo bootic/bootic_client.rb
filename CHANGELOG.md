@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.13](https://github.com/bootic/bootic_client.rb/tree/v0.0.13) (2016-01-12)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.12...v0.0.13)
+
+**Merged pull requests:**
+
+- Faraday HTTP Cache expects memcache store must respond to \#delete [\#5](https://github.com/bootic/bootic_client.rb/pull/5) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.12](https://github.com/bootic/bootic_client.rb/tree/v0.0.12) (2016-01-11)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.11...v0.0.12)
 
