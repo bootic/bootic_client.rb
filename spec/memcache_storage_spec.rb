@@ -23,6 +23,13 @@ describe BooticClient::Stores::Memcache do
     end
   end
 
+  shared_examples_for 'dalli :delete' do |method_name|
+    it 'delegates to Dalli client #delete' do
+      expect(dalli).to receive(:delete).with('foo').and_return true
+      expect(store.send(method_name, 'foo')).to be true
+    end
+  end
+
   describe '#initialize' do
     it 'creates a Dalli instance' do
       expect(Dalli::Client).to receive(:new).with(['localhost:1112'], foo: 'bar').and_return dalli
@@ -44,6 +51,10 @@ describe BooticClient::Stores::Memcache do
 
   describe '#set' do
     it_behaves_like 'dalli :set', :set
+  end
+
+  describe '#delete' do
+    it_behaves_like 'dalli :delete', :delete
   end
 
   describe '#stats' do

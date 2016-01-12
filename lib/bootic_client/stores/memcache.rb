@@ -21,6 +21,10 @@ module BooticClient
         @client.get key
       end
 
+      def delete(key)
+        @client.delete key
+      end
+
       def set(key, data, ttl = nil)
         @client.set key, data, ttl
       end
