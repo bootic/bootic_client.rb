@@ -102,7 +102,7 @@ module BooticClient
     def sanitized(payload)
       return payload unless payload.kind_of?(Hash)
       payload.each_with_object({}) do |(k, v), memo|
-        v = case v
+        memo[k] = case v
         when IO
           Base64.encode64 v.read
         when Hash
@@ -110,8 +110,6 @@ module BooticClient
         else
           v
         end
-
-        memo[k] = v
       end
     end
   end
