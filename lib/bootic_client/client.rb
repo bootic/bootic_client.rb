@@ -1,3 +1,4 @@
+require 'base64'
 require 'faraday'
 require 'faraday_middleware'
 require 'faraday-http-cache'
@@ -33,21 +34,21 @@ module BooticClient
     def post(href, payload = {}, headers = {})
       validated_request!(:post, href) do |req|
         req.headers.update headers
-        req.body = JSON.dump(payload)
+        req.body = JSON.dump(sanitized(payload))
       end
     end
 
     def put(href, payload = {}, headers = {})
       validated_request!(:put, href) do |req|
         req.headers.update headers
-        req.body = JSON.dump(payload)
+        req.body = JSON.dump(sanitized(payload))
       end
     end
 
     def patch(href, payload = {}, headers = {})
       validated_request!(:patch, href) do |req|
         req.headers.update headers
-        req.body = JSON.dump(payload)
+        req.body = JSON.dump(sanitized(payload))
       end
     end
 
@@ -96,6 +97,20 @@ module BooticClient
       raise NotFoundError, "Not Found" if resp.status == 404
       raise UnauthorizedError, "Unauthorized request" if resp.status == 401
       raise AccessForbiddenError, "Access Forbidden" if resp.status == 403
+    end
+
+    def sanitized(payload)
+      return payload unless payload.kind_of?(Hash)
+      payload.each_with_object({}) do |(k, v), memo|
+        memo[k] = case v
+        when IO
+          Base64.encode64 v.read
+        when Hash
+          sanitized v
+        else
+          v
+        end
+      end
     end
   end
 

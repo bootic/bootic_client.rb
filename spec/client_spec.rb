@@ -4,6 +4,10 @@ require 'json'
 describe BooticClient::Client do
   require 'webmock/rspec'
 
+  def fixture_path(filename)
+    File.join File.dirname(File.expand_path(__FILE__)), 'fixtures', filename
+  end
+
   describe 'valid response' do
     let(:root_url) { 'https://api.bootic.net/v1' }
     let(:client) { BooticClient::Client.new }
@@ -187,6 +191,21 @@ describe BooticClient::Client do
         end
       end
 
+      describe 'with file data' do
+        let(:base64_data) { Base64.encode64(File.read(fixture_path('file.gif'))) }
+        let(:file) { File.new(fixture_path('file.gif')) }
+
+        before do
+          stub_request(:post, root_url)
+            .with(body: JSON.dump({foo: 'bar', data: base64_data}), headers: request_headers)
+            .to_return(status: 201, body: JSON.dump(root_data), headers: response_headers)
+        end
+
+        it 'POSTs request with base64-encoded file and parses response' do
+          expect(client.post(root_url, {foo: 'bar', data: file}, request_headers).body['message']).to eql('Hello!')
+        end
+      end
+
       [:put, :patch].each do |verb|
         describe verb.to_s.upcase do
           before do
@@ -197,6 +216,21 @@ describe BooticClient::Client do
 
           it "#{verb.to_s.upcase}s request and parses response" do
             expect(client.send(verb, root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
+          end
+        end
+
+        describe "#{verb.to_s.upcase} with file data" do
+          let(:base64_data) { Base64.encode64(File.read(fixture_path('file.gif'))) }
+          let(:file) { File.new(fixture_path('file.gif')) }
+
+          before do
+            stub_request(verb, root_url)
+              .with(body: JSON.dump({foo: 'bar', data: {name: 'la', file: base64_data}}), headers: request_headers)
+              .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+          end
+
+          it "#{verb.to_s.upcase}s request with base64-encoded file data and parses response" do
+            expect(client.send(verb, root_url, {foo: 'bar', data: {name: 'la', file: file}}, request_headers).body['message']).to eql('Hello!')
           end
         end
       end

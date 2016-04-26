@@ -165,6 +165,17 @@ if shop.can?(:create_product)
 end
 ```
 
+### Working with Files and IO instances
+
+Instances of `File` and other readable `IO` objects will be base64-encoded internally before JSON-encoding payloads for `POST`, `PUT` and `PATCH` requests.
+
+```ruby
+asset = product.create_product_asset(
+  filename: 'foo.jpg',
+  data: File.new('/path/to/foo.jpg') # this will base64-encode the file data in the `data` field.
+)
+```
+
 ## Relation docs
 
 All resource link relations include a "docs" URL so you can learn more about that particular resource.
@@ -187,7 +198,7 @@ BooticClient.configure do |c|
 end
 ```
 
-Outside of Rails, BooticClient ships with a wrapper around the [Dalli](https://github.com/mperham/dalli) memcache client. 
+Outside of Rails, BooticClient ships with a wrapper around the [Dalli](https://github.com/mperham/dalli) memcache client.
 You must include Dalli in your Gemfile and require the wrapper explicitely.
 
 ```ruby
