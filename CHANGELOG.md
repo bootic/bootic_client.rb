@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.14](https://github.com/bootic/bootic_client.rb/tree/v0.0.14) (2016-04-26)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.13...v0.0.14)
+
+**Merged pull requests:**
+
+- Base64-encode IO instances before POST|PUT|PATH [\#6](https://github.com/bootic/bootic_client.rb/pull/6) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.13](https://github.com/bootic/bootic_client.rb/tree/v0.0.13) (2016-01-12)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.12...v0.0.13)
 
