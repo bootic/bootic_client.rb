@@ -103,11 +103,10 @@ module BooticClient
     def sanitized(payload)
       return payload unless payload.kind_of?(Hash)
       payload.each_with_object({}) do |(k, v), memo|
-        memo[k] = case v
-        when IO
-          Base64.encode64 v.read
-        when Hash
+        memo[k] = if v.kind_of?(Hash)
           sanitized v
+        elsif v.respond_to?(:read)
+          Base64.encode64 v.read
         else
           v
         end

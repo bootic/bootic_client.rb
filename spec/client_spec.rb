@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'json'
+require "open-uri"
 
 describe BooticClient::Client do
   require 'webmock/rspec'
@@ -203,6 +204,16 @@ describe BooticClient::Client do
 
         it 'POSTs request with base64-encoded file and parses response' do
           expect(client.post(root_url, {foo: 'bar', data: file}, request_headers).body['message']).to eql('Hello!')
+        end
+
+        it "works with anything that responds to #read" do
+          reader = double("reader", read: File.read(fixture_path("file.gif")))
+          expect(client.post(root_url, {foo: 'bar', data: reader}, request_headers).body['message']).to eql('Hello!')
+        end
+
+        it "works with open-uri" do
+          reader = open(fixture_path("file.gif"))
+          expect(client.post(root_url, {foo: 'bar', data: reader}, request_headers).body['message']).to eql('Hello!')
         end
       end
 

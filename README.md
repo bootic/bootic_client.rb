@@ -167,12 +167,38 @@ end
 
 ### Working with Files and IO instances
 
-Instances of `File` and other readable `IO` objects will be base64-encoded internally before JSON-encoding payloads for `POST`, `PUT` and `PATCH` requests.
+Instances of `File`, other readable `IO` objects (and in fact anything that responds to `#read`) will be base64-encoded internally before JSON-encoding payloads for `POST`, `PUT` and `PATCH` requests.
 
 ```ruby
 asset = product.create_product_asset(
   filename: 'foo.jpg',
   data: File.new('/path/to/foo.jpg') # this will base64-encode the file data in the `data` field.
+)
+```
+
+Because anything that responds to `#read` will be interpreted as file data and base64-encoded, you can also pass instances of `open-uri`.
+
+```ruby
+require "open-uri"
+
+asset = product.create_product_asset(
+  filename: 'foo.jpg',
+  data: open("https://some.server.com/some/image.jpg") # this will base64-encode the file data in the `data` field.
+)
+```
+
+.. or even your own readers
+
+```ruby
+class MyReader
+  def read
+    "some data here"
+  end
+end
+
+asset = product.create_product_asset(
+  filename: 'foo.jpg',
+  data: MyReader.new # this will base64-encode the file data in the `data` field.
 )
 ```
 
