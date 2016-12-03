@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.15](https://github.com/bootic/bootic_client.rb/tree/v0.0.15) (2016-12-03)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.14...v0.0.15)
+
+**Merged pull requests:**
+
+- Base64-encode any attribute that responds to \#read [\#7](https://github.com/bootic/bootic_client.rb/pull/7) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.14](https://github.com/bootic/bootic_client.rb/tree/v0.0.14) (2016-04-26)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.13...v0.0.14)
 
