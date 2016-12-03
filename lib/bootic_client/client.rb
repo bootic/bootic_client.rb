@@ -16,7 +16,8 @@ module BooticClient
 
     def initialize(options = {}, &block)
       @options = {
-        logging: false
+        logging: false,
+        faraday_adapter: [:net_http_persistent],
       }.merge(options.dup)
 
       @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
@@ -69,7 +70,7 @@ module BooticClient
         f.response :logger, options[:logger] if options[:logging]
         f.response :json
         yield f if block_given?
-        f.adapter :net_http_persistent
+        f.adapter *Array(options[:faraday_adapter])
       end
     end
 
