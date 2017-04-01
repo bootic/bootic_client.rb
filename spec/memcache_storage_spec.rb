@@ -6,7 +6,7 @@ describe BooticClient::Stores::Memcache do
   let(:store) { BooticClient::Stores::Memcache.new(['localhost:1112'], foo: 'bar') }
 
   before do
-    Dalli::Client.stub(:new).with(['localhost:1112'], foo: 'bar').and_return dalli
+    allow(Dalli::Client).to receive(:new).with(['localhost:1112'], foo: 'bar').and_return dalli
   end
 
   shared_examples_for 'dalli :get' do |method_name|
