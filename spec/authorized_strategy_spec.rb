@@ -24,7 +24,7 @@ describe 'BooticClient::Strategies::Authorized' do
 
   def stub_auth(expired_token, status, body, client_id: '', client_secret: '', scope: '')
     now = Time.now
-    Time.stub(:now).and_return now
+    allow(Time).to receive(:now).and_return now
 
     stub_request(:post, "https://auth.bootic.net/oauth/token").
       with(body: {
