@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe BooticClient::Relation do
   let(:client) { double(:client) }
-  let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'title' => 'A relation', 'name' => 'self'}, client) }
+  let(:attributes) {{'href' => '/foo/bars', 'type' => 'application/json', 'title' => 'A relation', 'name' => 'self'}}
+  let(:relation) { BooticClient::Relation.new(attributes, client) }
 
   describe 'attributes' do
     it 'has readers for known relation attributes' do
@@ -10,6 +11,13 @@ describe BooticClient::Relation do
       expect(relation.type).to eql('application/json')
       expect(relation.title).to eql('A relation')
       expect(relation.name).to eql('self')
+    end
+  end
+
+  describe '#to_hash' do
+    it 'returns attributes' do
+      hash = relation.to_hash
+      expect(hash).to eq attributes
     end
   end
 

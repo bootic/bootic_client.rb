@@ -43,6 +43,10 @@ module BooticClient
       attrs['docs']
     end
 
+    def to_hash
+      attrs
+    end
+
     def transport_method
       @transport_method ||= attrs['method'] || GET
     end
