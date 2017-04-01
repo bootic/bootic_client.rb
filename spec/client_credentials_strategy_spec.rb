@@ -25,8 +25,8 @@ describe 'BooticClient::Strategies::ClientCredentials' do
   describe 'with valid client credentials' do
 
     def stub_auth(status, body)
-      stub_request(:post, "https://aaa:bbb@auth.bootic.net/oauth/token").
-        with(body: {"grant_type"=>"client_credentials", 'scope' => 'admin'}).
+      stub_request(:post, "https://auth.bootic.net/oauth/token").
+        with(body: {"grant_type"=>"client_credentials", client_id: "aaa", client_secret: "bbb", 'scope' => 'admin'}).
         to_return(status: status, body: JSON.dump(body), headers: {'Content-Type' => 'application/json'})
     end
 
