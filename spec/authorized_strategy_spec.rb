@@ -153,5 +153,16 @@ describe 'BooticClient::Strategies::Authorized' do
         expect(entity.can?(:delete)).to be true
       end
     end
+
+    describe '#from_url' do
+      it 'builds and returns an entity' do
+        authorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
+          to_return(status: 200, :body => JSON.dump(title: 'All shops'))
+
+        entity = client.from_url('https://api.bootic.net/v1/shops')
+        expect(entity).to be_kind_of(BooticClient::Entity)
+        expect(entity.title).to eql('All shops')
+      end
+    end
   end
 end

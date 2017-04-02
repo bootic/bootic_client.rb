@@ -17,6 +17,10 @@ module BooticClient
         wrapper_class.new hash, self
       end
 
+      def from_url(url, wrapper_class = Entity)
+        request_and_wrap :get, url, wrapper_class
+      end
+
       def request_and_wrap(request_method, href, wrapper_class, payload = {})
         pre_flight
         retryable do
