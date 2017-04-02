@@ -1,5 +1,20 @@
 # Change Log
 
+## [Unreleased](https://github.com/bootic/bootic_client.rb/tree/HEAD)
+
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.16...HEAD)
+
+**Merged pull requests:**
+
+- Client\#from\_url\(url\) [\#9](https://github.com/bootic/bootic_client.rb/pull/9) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.16](https://github.com/bootic/bootic_client.rb/tree/v0.0.16) (2017-04-01)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.15...v0.0.16)
+
+**Merged pull requests:**
+
+- Add Relation\#to\_hash [\#8](https://github.com/bootic/bootic_client.rb/pull/8) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.15](https://github.com/bootic/bootic_client.rb/tree/v0.0.15) (2016-12-03)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.14...v0.0.15)
 
