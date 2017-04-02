@@ -254,6 +254,13 @@ new_message = messaging_api.send_message(title: 'This is a new message')
 messaging_api.delete_message(id: new_message.id)
 ```
 
+It's also possibe to load a root resource directly from a URL:
+
+```ruby
+messaging_api_root = client.from_url("https://some.api.com")
+messaging_api.do_something(foo: "bar") # etc
+```
+
 ## Contributing
 
 1. Fork it
