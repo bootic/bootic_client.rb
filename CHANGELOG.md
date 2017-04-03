@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.18](https://github.com/bootic/bootic_client.rb/tree/v0.0.18) (2017-04-03)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.17...v0.0.18)
+
+**Merged pull requests:**
+
+- Bearer token strategy [\#10](https://github.com/bootic/bootic_client.rb/pull/10) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.17](https://github.com/bootic/bootic_client.rb/tree/v0.0.17) (2017-04-02)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.16...v0.0.17)
 
