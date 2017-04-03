@@ -129,6 +129,13 @@ root = client.root # etc
 
 NOTE: `username` and `password` have nothing to do with your Bootic administrative credentials, and will be up to API maintainers to define.
 
+### 4. Bearer token
+
+This strategy adds an access token as a header in the format `Authorization: Bearer <your-token-here>`.
+It will not try to refresh an expired token from an Oauth2 server, so there's no need to configure Oauth2 credentials.
+
+Use this with APIs that don't expire tokens, or for testing.
+
 ## Non GET links
 
 Most resource links lead to `GET` resources, but some will expect `POST`, `PUT`, `DELETE` or others.
