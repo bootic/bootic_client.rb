@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/bootic/bootic_client.rb/tree/HEAD)
-
-[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.16...HEAD)
+## [v0.0.17](https://github.com/bootic/bootic_client.rb/tree/v0.0.17) (2017-04-02)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.16...v0.0.17)
 
 **Merged pull requests:**
 
