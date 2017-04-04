@@ -134,6 +134,12 @@ NOTE: `username` and `password` have nothing to do with your Bootic administrati
 This strategy adds an access token as a header in the format `Authorization: Bearer <your-token-here>`.
 It will not try to refresh an expired token from an Oauth2 server, so there's no need to configure Oauth2 credentials.
 
+```ruby
+client = BooticClient.client(:bearer, access_token: 'foobar')
+
+root = client.root # etc
+```
+
 Use this with APIs that don't expire tokens, or for testing.
 
 ## Non GET links
