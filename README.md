@@ -39,7 +39,7 @@ end
 ### Using with an existing access token
 
 ```ruby
-bootic = BooticClient.client(:authorized, access_token: 'beidjbewjdiedue...', logging: true)
+bootic = BooticClient.client(:authorized, access_token: 'beidjbewjdiedue...')
 
 root = bootic.root
 
