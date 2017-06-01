@@ -54,9 +54,15 @@ describe BooticClient::Relation do
           expect(relation.templated?).to eql(true)
         end
 
+        it 'complains if missing path variables' do
+          expect{
+            relation.run
+          }.to raise_error BooticClient::InvalidURLError
+        end
+
         it 'works with defaults' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/', BooticClient::Entity, {}).and_return entity
-          expect(relation.run).to eql(entity)
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/123', BooticClient::Entity, {}).and_return entity
+          expect(relation.run(id: 123)).to eql(entity)
         end
 
         it 'has parameter list' do
@@ -64,8 +70,14 @@ describe BooticClient::Relation do
         end
 
         it 'interpolates tokens' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', BooticClient::Entity, {other: 'other'}).and_return entity
-          expect(relation.run(id: 2, q: 'test', page: 2, other: 'other')).to eql(entity)
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', BooticClient::Entity, {}).and_return entity
+          expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
+        end
+
+        it 'complains if passing undeclared query variables' do
+          expect{
+            relation.run(id: 2, q: 'test', page: 2, other: 'foo')
+          }.to raise_error BooticClient::InvalidURLError
         end
       end
     end
@@ -79,7 +91,7 @@ describe BooticClient::Relation do
         expect(relation.run).to eql(entity)
       end
 
-      it 'interpolates templated URLs' do
+      it 'interpolates templated URLs and sends remaining as BODY' do
         allow(client).to receive(:request_and_wrap).with(:post, '/foo/123', BooticClient::Entity, {foo: 'bar'}).and_return entity
         expect(relation_templated.run(bars: 123, foo: 'bar')).to eql(entity)
       end
