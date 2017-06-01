@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.19](https://github.com/bootic/bootic_client.rb/tree/v0.0.19) (2017-06-01)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.18...v0.0.19)
+
+**Merged pull requests:**
+
+- Raise errors on invalid URLs [\#11](https://github.com/bootic/bootic_client.rb/pull/11) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.18](https://github.com/bootic/bootic_client.rb/tree/v0.0.18) (2017-04-03)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.17...v0.0.18)
 
@@ -33,7 +40,7 @@
 
 **Merged pull requests:**
 
-- Base64-encode IO instances before POST|PUT|PATH [\#6](https://github.com/bootic/bootic_client.rb/pull/6) ([ismasan](https://github.com/ismasan))
+- Base64-encode IO instances before POST|PUT|PATCH [\#6](https://github.com/bootic/bootic_client.rb/pull/6) ([ismasan](https://github.com/ismasan))
 
 ## [v0.0.13](https://github.com/bootic/bootic_client.rb/tree/v0.0.13) (2016-01-12)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.12...v0.0.13)
