@@ -1,50 +1,5 @@
 require 'spec_helper'
-
-require 'uri_template'
-module BooticClient
-  class WhinyURI
-    attr_reader :variables
-
-    def initialize(href)
-      @href = href
-      @uri = URITemplate.new(href)
-      @variables = @uri.variables
-    end
-
-    def expand(attrs = {})
-      missing = missing_path_variables(attrs)
-      if missing.any?
-        raise InvalidURLError, "missing: #{missing.join(', ')}"
-      end
-
-      undeclared = undeclared_params(attrs)
-      if undeclared.any?
-        raise InvalidURLError, "undeclared: #{undeclared.join(', ')}"
-      end
-
-      uri.expand attrs
-    end
-
-    private
-    attr_reader :uri, :href
-
-    def path_variables
-      @path_variables ||= (
-        variables.find_all{ |v|
-          Regexp.new("(\/\{#{v}\})|(\{\/#{v}\})") =~ href
-        }
-      )
-    end
-
-    def missing_path_variables(attrs)
-      path_variables - attrs.keys.map(&:to_s)
-    end
-
-    def undeclared_params(attrs)
-      attrs.keys.map(&:to_s) - variables
-    end
-  end
-end
+require "bootic_client/whiny_uri"
 
 describe BooticClient::WhinyURI do
   describe '#expand' do

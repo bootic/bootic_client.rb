@@ -1,4 +1,4 @@
-require 'uri_template'
+require "bootic_client/whiny_uri"
 require "bootic_client/entity"
 
 module BooticClient
@@ -6,6 +6,8 @@ module BooticClient
   class Relation
 
     GET = 'get'.freeze
+    HEAD = 'head'.freeze
+    OPTIONS = 'options'.freeze
 
     def initialize(attrs, client, wrapper_class = Entity)
       @attrs, @client, @wrapper_class = attrs, client, wrapper_class
@@ -48,7 +50,7 @@ module BooticClient
     end
 
     def transport_method
-      @transport_method ||= attrs['method'] || GET
+      @transport_method ||= attrs.key?('method') ? attrs['method'].to_s.downcase : GET
     end
 
     def run(opts = {})
@@ -57,6 +59,8 @@ module BooticClient
         payload = opts.each_with_object({}) do |(k,v),memo|
           memo[k] = v unless uri_vars.include?(k.to_s)
         end
+        # remove payload vars from URI opts if destructive action
+        opts = opts.reject{|k, v| !uri_vars.include?(k.to_s) } if destructive?
         client.request_and_wrap transport_method.to_sym, uri.expand(opts), wrapper_class, payload
       else
         client.request_and_wrap transport_method.to_sym, href, wrapper_class, opts
@@ -64,15 +68,18 @@ module BooticClient
     end
 
     def self.expand(href, opts = {})
-      URITemplate.new(href).expand(opts)
+      WhinyURI.new(href).expand(opts)
     end
 
     protected
     attr_reader :wrapper_class, :client, :attrs
 
     def uri
-      @uri ||= URITemplate.new(href)
+      @uri ||= WhinyURI.new(href)
+    end
+
+    def destructive?
+      ![GET, OPTIONS, HEAD].include? transport_method
     end
   end
-
 end
