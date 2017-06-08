@@ -24,7 +24,8 @@ module BooticClient
       opts[:logger] = logger if logging
       opts[:cache_store] = cache_store if cache_store
       require "bootic_client/strategies/#{strategy_name}"
-      strategies.fetch(strategy_name.to_sym).new self, opts, &on_new_token
+      str = strategies.fetch(strategy_name.to_sym).new(self, opts, &on_new_token)
+      @stubber ? @stubber : str
     end
 
     def auth_host
@@ -42,6 +43,18 @@ module BooticClient
     def configure(&block)
       yield self
     end
-  end
 
+    def stub!
+      require "bootic_client/stubbing"
+      @stubber = Stubbing::StubRoot.new
+    end
+
+    def stub_chain(method_chain, opts = {})
+      @stubber.stub_chain(method_chain, opts)
+    end
+
+    def unstub!
+      @stubber = nil
+    end
+  end
 end
