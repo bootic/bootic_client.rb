@@ -19,13 +19,13 @@ module BooticClient
     end
 
     def client(strategy_name, client_opts = {}, &on_new_token)
+      return @stubber if @stubber
       opts = client_opts.dup
       opts[:logging] = logging
       opts[:logger] = logger if logging
       opts[:cache_store] = cache_store if cache_store
       require "bootic_client/strategies/#{strategy_name}"
-      str = strategies.fetch(strategy_name.to_sym).new(self, opts, &on_new_token)
-      @stubber ? @stubber : str
+      strategies.fetch(strategy_name.to_sym).new(self, opts, &on_new_token)
     end
 
     def auth_host
