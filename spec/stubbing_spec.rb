@@ -50,6 +50,16 @@ describe "stubbing" do
     expect(client.root.shops(foo: 2).name).to eq 'Foo 2'
   end
 
+  it "stubs multiple chains with arguments" do
+    BooticClient.stub_chain('one.two', arg: 1).stub_chain('three.four').and_return_data('name' => 'example 1')
+    BooticClient.stub_chain('one.two', arg: 2).stub_chain('three.four').and_return_data('name' => 'example 2')
+
+    client = BooticClient.client(:authorized, access_token: 'abc')
+
+    expect(client.one.two(arg: 1).three.four.name).to eq 'example 1'
+    expect(client.one.two(arg: 2).three.four.name).to eq 'example 2'
+  end
+
   it "raises known exception if no stub found" do
     client = BooticClient.client(:authorized, access_token: 'abc')
 
