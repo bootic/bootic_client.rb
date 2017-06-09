@@ -39,7 +39,7 @@ describe "stubbing" do
     BooticClient.stub_chain('root.shops', foo: 1).and_return_data({
       'name' => 'Foo 1'
     })
-    BooticClient.stub_chain('root.shops', foo: 2).and_return_data({
+    BooticClient.stub_chain('root.shops', foo: 2, bar: {yup: 'yiss'}).and_return_data({
       'name' => 'Foo 2'
     })
 
@@ -47,7 +47,11 @@ describe "stubbing" do
 
     expect(client.root.shops(foo: 0).name).to eq 'Foo 0'
     expect(client.root.shops(foo: 1).name).to eq 'Foo 1'
-    expect(client.root.shops(foo: 2).name).to eq 'Foo 2'
+    expect(client.root.shops(foo: 2, bar: {yup: 'yiss'}).name).to eq 'Foo 2'
+
+    expect {
+      client.root.shops(foo: 2, bar: {yup: 'nope'})
+    }.to raise_error BooticClient::Stubbing::MissingStubError
   end
 
   it "stubs multiple chains with arguments" do
