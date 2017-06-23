@@ -64,6 +64,13 @@ describe "stubbing" do
     expect(client.one.two(arg: 2).three.four.name).to eq 'example 2'
   end
 
+  it "treats symbol and string keys the same" do
+    BooticClient.stub_chain('one.two', arg: 1).and_return_data('name' => 'example 1')
+    client = BooticClient.client(:authorized, access_token: 'abc')
+
+    expect(client.one.two("arg" => 1).name).to eq 'example 1'
+  end
+
   it "raises known exception if no stub found" do
     client = BooticClient.client(:authorized, access_token: 'abc')
 

@@ -6,6 +6,8 @@ module BooticClient
       def stub_chain(method_path, opts = {})
         meths = method_path.split('.')
         c = 0
+        opts = stringify_keys(opts)
+
         meths.reduce(self) do |stub, method_name|
           c += 1
           a = c == meths.size ? opts : {}
@@ -24,12 +26,18 @@ module BooticClient
       end
 
       def method_missing(method_name, *args, &block)
-        opts = args.first
+        opts = stringify_keys(args.first)
         if stub = stubs[stub_key(method_name, opts)]
           stub.returns? ? stub.returns : stub
         else
           raise MissingStubError, "No method stubbed for '#{method_name}' with options #{opts.inspect}"
         end
+      end
+
+      def respond_to_missing?(method_name, include_private = false)
+        stubs.keys.any?{|k|
+          k.to_s =~ /^#{method_name.to_s}/
+        }
       end
 
       private
@@ -39,6 +47,14 @@ module BooticClient
 
       def options_key(value)
         value.inspect
+      end
+
+      def stringify_keys(hash)
+        return hash unless hash.is_a?(Hash)
+
+        hash.each_with_object({}) do |(k, v), h|
+          h[k.to_s] = stringify_keys(v)
+        end
       end
     end
 
