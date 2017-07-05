@@ -45,8 +45,20 @@ module BooticClient
         [method_name.to_s, options_key(opts || {})].join('_')
       end
 
-      def options_key(value)
-        value.inspect
+      def options_key(opts)
+        # sort keys
+        keys = opts.keys.sort
+        hash = keys.each_with_object({}) do |key, h|
+          value = if opts[key].is_a?(Hash)
+            options_key(opts[key])
+          else
+            opts[key].to_s
+          end
+
+          h[key] = value
+        end
+
+        hash.inspect
       end
 
       def stringify_keys(hash)

@@ -48,6 +48,8 @@ describe "stubbing" do
     expect(client.root.shops(foo: 0).name).to eq 'Foo 0'
     expect(client.root.shops(foo: 1).name).to eq 'Foo 1'
     expect(client.root.shops(foo: 2, bar: {yup: 'yiss'}).name).to eq 'Foo 2'
+    # arg order shouldn't matter
+    expect(client.root.shops(bar: {yup: 'yiss'}, foo: 2).name).to eq 'Foo 2'
 
     expect {
       client.root.shops(foo: 2, bar: {yup: 'nope'})
