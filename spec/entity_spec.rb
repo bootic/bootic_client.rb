@@ -174,6 +174,12 @@ describe BooticClient::Entity do
             expect(next_entity.page).to eql(2)
           end
         end
+
+        it 'complains if passing undeclared link params' do
+          expect {
+            entity.search(foo: 'bar')
+          }.to raise_error(BooticClient::InvalidURLError)
+        end
       end
 
     end

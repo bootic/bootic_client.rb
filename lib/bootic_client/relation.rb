@@ -1,16 +1,26 @@
 require "bootic_client/whiny_uri"
 require "bootic_client/entity"
+require 'ostruct'
 
 module BooticClient
 
   class Relation
-
     GET = 'get'.freeze
     HEAD = 'head'.freeze
     OPTIONS = 'options'.freeze
 
-    def initialize(attrs, client, wrapper_class = Entity)
-      @attrs, @client, @wrapper_class = attrs, client, wrapper_class
+    class << self
+      attr_writer :complain_on_undeclared_params
+
+      def complain_on_undeclared_params
+        return true unless instance_variable_defined?('@complain_on_undeclared_params')
+        @complain_on_undeclared_params
+      end
+    end
+
+    def initialize(attrs, client, entity_class: Entity, complain_on_undeclared_params: self.class.complain_on_undeclared_params)
+      @attrs, @client, @entity_class = attrs, client, entity_class
+      @complain_on_undeclared_params = complain_on_undeclared_params
     end
 
     def inspect
@@ -61,9 +71,9 @@ module BooticClient
         end
         # remove payload vars from URI opts if destructive action
         opts = opts.reject{|k, v| !uri_vars.include?(k.to_s) } if destructive?
-        client.request_and_wrap transport_method.to_sym, uri.expand(opts), wrapper_class, payload
+        client.request_and_wrap transport_method.to_sym, uri.expand(opts), entity_class, payload
       else
-        client.request_and_wrap transport_method.to_sym, href, wrapper_class, opts
+        client.request_and_wrap transport_method.to_sym, href, entity_class, opts
       end
     end
 
@@ -72,10 +82,10 @@ module BooticClient
     end
 
     protected
-    attr_reader :wrapper_class, :client, :attrs
+    attr_reader :entity_class, :client, :attrs, :complain_on_undeclared_params
 
     def uri
-      @uri ||= WhinyURI.new(href)
+      @uri ||= WhinyURI.new(href, complain_on_undeclared_params)
     end
 
     def destructive?
