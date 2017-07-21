@@ -4,28 +4,33 @@ module BooticClient
   class WhinyURI
     attr_reader :variables
 
-    def initialize(href)
+    def initialize(href, complain_on_undeclared_params = true)
       @href = href
       @uri = URITemplate.new(href)
       @variables = @uri.variables
+      @complain_on_undeclared_params = complain_on_undeclared_params
     end
 
     def expand(attrs = {})
+      attrs = stringify(attrs)
+
       missing = missing_path_variables(attrs)
       if missing.any?
         raise InvalidURLError, missing_err(missing)
       end
 
       undeclared = undeclared_params(attrs)
-      if undeclared.any?
-        raise InvalidURLError, undeclared_err(undeclared)
+      if complain_on_undeclared_params
+        if undeclared.any?
+          raise InvalidURLError, undeclared_err(undeclared)
+        end
       end
 
-      uri.expand attrs
+      uri.expand whitelisted(attrs)
     end
 
     private
-    attr_reader :uri, :href
+    attr_reader :uri, :href, :complain_on_undeclared_params
 
     def path_variables
       @path_variables ||= (
@@ -35,12 +40,22 @@ module BooticClient
       )
     end
 
+    def whitelisted(attrs = {})
+      variables.each_with_object({}) do |key, hash|
+        hash[key] = attrs[key] if attrs.key?(key)
+      end
+    end
+
     def missing_path_variables(attrs)
-      path_variables - attrs.keys.map(&:to_s)
+      path_variables - attrs.keys
+    end
+
+    def declared_params
+      @declared_params ||= variables - path_variables
     end
 
     def undeclared_params(attrs)
-      attrs.keys.map(&:to_s) - variables
+      attrs.keys - variables
     end
 
     def undeclared_err(undeclared)
@@ -56,6 +71,12 @@ module BooticClient
 
     def format_vars(vars)
       vars.map{|v| "`#{v}`"}.join(', ')
+    end
+
+    def stringify(attrs)
+      attrs.each_with_object({}) do |(k, v), hash|
+        hash[k.to_s] = v
+      end
     end
   end
 end

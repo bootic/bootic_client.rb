@@ -9,8 +9,9 @@ module BooticClient
     HEAD = 'head'.freeze
     OPTIONS = 'options'.freeze
 
-    def initialize(attrs, client, wrapper_class = Entity)
+    def initialize(attrs, client, wrapper_class = Entity, complain_on_undeclared_params: true)
       @attrs, @client, @wrapper_class = attrs, client, wrapper_class
+      @complain_on_undeclared_params = complain_on_undeclared_params
     end
 
     def inspect
@@ -72,10 +73,10 @@ module BooticClient
     end
 
     protected
-    attr_reader :wrapper_class, :client, :attrs
+    attr_reader :wrapper_class, :client, :attrs, :complain_on_undeclared_params
 
     def uri
-      @uri ||= WhinyURI.new(href)
+      @uri ||= WhinyURI.new(href, complain_on_undeclared_params)
     end
 
     def destructive?

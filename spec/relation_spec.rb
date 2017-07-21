@@ -80,6 +80,25 @@ describe BooticClient::Relation do
           }.to raise_error BooticClient::InvalidURLError
         end
       end
+
+      context "configured to not complain on undeclared variables" do
+        let(:relation) {
+          BooticClient::Relation.new({
+            'href' => '/foos/{id}{?q,page}',
+            'templated' => true
+            },
+            client,
+            BooticClient::Entity,
+            complain_on_undeclared_params: false
+          )
+        }
+
+        it "whitelists params but does not complain" do
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=3', BooticClient::Entity, {foo: 1}).and_return entity
+
+          relation.run(id: 2, q: 'test', page: 3, foo: 1)
+        end
+      end
     end
 
     describe 'POST' do
