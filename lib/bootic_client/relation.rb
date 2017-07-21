@@ -1,15 +1,24 @@
 require "bootic_client/whiny_uri"
 require "bootic_client/entity"
+require 'ostruct'
 
 module BooticClient
 
   class Relation
-
     GET = 'get'.freeze
     HEAD = 'head'.freeze
     OPTIONS = 'options'.freeze
 
-    def initialize(attrs, client, entity_class: Entity, complain_on_undeclared_params: true)
+    class << self
+      attr_writer :complain_on_undeclared_params
+
+      def complain_on_undeclared_params
+        return true unless instance_variable_defined?('@complain_on_undeclared_params')
+        @complain_on_undeclared_params
+      end
+    end
+
+    def initialize(attrs, client, entity_class: Entity, complain_on_undeclared_params: self.class.complain_on_undeclared_params)
       @attrs, @client, @entity_class = attrs, client, entity_class
       @complain_on_undeclared_params = complain_on_undeclared_params
     end

@@ -180,16 +180,6 @@ describe BooticClient::Entity do
             entity.search(foo: 'bar')
           }.to raise_error(BooticClient::InvalidURLError)
         end
-
-        it 'does not complain if passing configuration to Relation' do
-          config = double(complain_on_undeclared_params: false)
-          entity = BooticClient::Entity.new(list_payload, client, config: config)
-
-          expect(client).to receive(:request_and_wrap).with(:get, '/search?q=foo', BooticClient::Entity, {}).and_return next_page
-          entity.search(q: 'foo').tap do |next_entity|
-            expect(next_entity.page).to eql(2)
-          end
-        end
       end
 
     end
