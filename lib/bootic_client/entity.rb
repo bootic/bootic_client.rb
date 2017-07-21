@@ -123,7 +123,7 @@ module BooticClient
           end
           if rel != CURIES_REL
             rel_attrs['name'] = rel
-            memo[rel.to_sym] = Relation.new(rel_attrs, client, Entity)
+            memo[rel.to_sym] = Relation.new(rel_attrs, client, entity_class: Entity)
           end
         end
       )

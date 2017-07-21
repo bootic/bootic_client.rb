@@ -88,7 +88,6 @@ describe BooticClient::Relation do
             'templated' => true
             },
             client,
-            BooticClient::Entity,
             complain_on_undeclared_params: false
           )
         }
