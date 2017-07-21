@@ -30,7 +30,7 @@ module BooticClient
 
     attr_reader :curies, :entities
 
-    def initialize(attrs, client, top = self)
+    def initialize(attrs, client, top: self)
       @attrs = attrs.kind_of?(Hash) ? attrs : {}
       @client, @top = client, top
       build!
@@ -142,9 +142,9 @@ module BooticClient
 
       @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
         memo[k.to_sym] = if v.kind_of?(Array)
-          v.map{|ent_attrs| Entity.new(ent_attrs, client, top)}
+          v.map{|ent_attrs| Entity.new(ent_attrs, client, top: top)}
         else
-          Entity.new(v, client, top)
+          Entity.new(v, client, top: top)
         end
       end
     end
