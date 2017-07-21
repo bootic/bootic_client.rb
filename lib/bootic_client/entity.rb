@@ -27,12 +27,14 @@ module BooticClient
     CURIE_EXP = /(.+):(.+)/.freeze
     CURIES_REL = 'curies'.freeze
     SPECIAL_PROP_EXP = /^_.+/.freeze
+    DEFAULT_CONFIG = OpenStruct.new(complain_on_undeclared_params: true).freeze
 
     attr_reader :curies, :entities
 
-    def initialize(attrs, client, top: self)
+    def initialize(attrs, client, top: self, config: DEFAULT_CONFIG)
       @attrs = attrs.kind_of?(Hash) ? attrs : {}
       @client, @top = client, top
+      @config = config
       build!
       self.extend EnumerableEntity if iterable?
     end
@@ -123,7 +125,11 @@ module BooticClient
           end
           if rel != CURIES_REL
             rel_attrs['name'] = rel
-            memo[rel.to_sym] = Relation.new(rel_attrs, client, entity_class: Entity)
+            memo[rel.to_sym] = Relation.new(
+              rel_attrs,
+              client,
+              complain_on_undeclared_params: config.complain_on_undeclared_params
+            )
           end
         end
       )
@@ -131,7 +137,7 @@ module BooticClient
 
     protected
 
-    attr_reader :client, :top, :attrs
+    attr_reader :client, :top, :attrs, :config
 
     def iterable?
       has_entity?(:items) && entities[:items].respond_to?(:each)
