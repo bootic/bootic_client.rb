@@ -100,7 +100,11 @@ module BooticClient
       end
 
       def returns
-        BooticClient::Entity.new(@return_data || {}, nil)
+        if @return_data.is_a?(Array)
+          @return_data.map{|d| BooticClient::Entity.new(d, nil)}
+        else
+          BooticClient::Entity.new(@return_data || {}, nil)
+        end
       end
 
       private

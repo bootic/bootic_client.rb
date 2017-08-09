@@ -20,6 +20,19 @@ describe "stubbing" do
     expect(shop.name).to eq 'Foo bar'
   end
 
+  it "stubs method chains and returns arrays of entities" do
+    BooticClient.stub_chain('root.shops').and_return_data([
+      {'name' => 'Foo bar'},
+      {'name' => 'Bar foo'}
+    ])
+
+    client = BooticClient.client(:authorized, access_token: 'abc')
+    shops = client.root.shops
+    expect(shops.first).to be_a BooticClient::Entity
+    expect(shops.last).to be_a BooticClient::Entity
+    expect(shops.first.name).to eq 'Foo bar'
+  end
+
   it 'can be chained further' do
     BooticClient.stub_chain('foo.bar')
     client = BooticClient.client(:authorized, access_token: 'abc')
