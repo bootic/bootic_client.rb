@@ -13,7 +13,7 @@ module BooticClient
 
   class << self
     attr_accessor :logging
-    attr_reader :client_id, :client_secret, :cache_store
+    attr_reader :client_id, :client_secret, :cache_store, :user_agent
 
     def strategies
       @strategies ||= {}
@@ -24,8 +24,13 @@ module BooticClient
       opts[:logging] = logging
       opts[:logger] = logger if logging
       opts[:cache_store] = cache_store if cache_store
+      opts[:user_agent] = user_agent if user_agent
       require "bootic_client/strategies/#{strategy_name}"
       strategies.fetch(strategy_name.to_sym).new self, opts, &on_new_token
+    end
+
+    def user_agent=(v)
+      set_non_nil :user_agent, v
     end
 
     def client_id=(v)
