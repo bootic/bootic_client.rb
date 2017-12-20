@@ -110,6 +110,27 @@ describe BooticClient::Client do
 
       end
 
+      context 'User-Agent' do
+        it 'sends it' do
+          req = stub_request(:get, root_url)
+            .with(headers: {'User-Agent' => described_class::USER_AGENT})
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+
+          client.get(root_url, {}, request_headers)
+          expect(req).to have_been_requested
+        end
+
+        it 'can be configured' do
+          client = described_class.new(user_agent: 'foobar')
+          req = stub_request(:get, root_url)
+            .with(headers: {'User-Agent' => 'foobar'})
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+
+          client.get(root_url, {}, request_headers)
+          expect(req).to have_been_requested
+        end
+      end
+
       context 'errors' do
         describe '500 Server error' do
           before do

@@ -18,6 +18,7 @@ module BooticClient
       @options = {
         logging: false,
         faraday_adapter: [:net_http_persistent],
+        user_agent: USER_AGENT
       }.merge(options.dup)
 
       @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
@@ -76,7 +77,7 @@ module BooticClient
 
     def request_headers
       {
-        'User-Agent' => USER_AGENT,
+        'User-Agent' => options[:user_agent],
         'Accept' => JSON_MIME,
         'Content-Type' => JSON_MIME
       }
