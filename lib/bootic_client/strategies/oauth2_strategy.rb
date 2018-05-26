@@ -30,10 +30,10 @@ module BooticClient
 
       def retryable(&block)
         begin
-          yield
+          super
         rescue AuthorizationError => e
           update_token!
-          yield
+          super
         end
       end
 

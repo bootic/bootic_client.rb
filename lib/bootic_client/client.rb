@@ -61,8 +61,15 @@ module BooticClient
 
     protected
 
+    DEFAULT_TIMEOUT = 10 # seconds
+
     def conn(&block)
-      @conn ||= Faraday.new do |f|
+      request_opts = {
+        timeout: options[:timeout] || DEFAULT_TIMEOUT, # both read/open timeout
+        open_timeout: options[:open_timeout] || DEFAULT_TIMEOUT, # only open timeout
+      }
+
+      @conn ||= Faraday.new(request: request_opts) do |f|
         cache_options = {shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
