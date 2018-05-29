@@ -3,6 +3,10 @@ module BooticClient
     MissingStubError = Class.new(StandardError)
 
     module Stubber
+      def from_hash(h)
+        self
+      end
+
       def stub_chain(method_path, opts = {})
         meths = method_path.split('.')
         c = 0
