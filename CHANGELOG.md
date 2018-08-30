@@ -1,5 +1,20 @@
 # Change Log
 
+## [v0.0.21](https://github.com/bootic/bootic_client.rb/tree/v0.0.21) (2018-08-30)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.20...v0.0.21)
+
+**Merged pull requests:**
+
+- Add :user\_agent option [\#13](https://github.com/bootic/bootic_client.rb/pull/13) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.20](https://github.com/bootic/bootic_client.rb/tree/v0.0.20) (2018-07-05)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.19...v0.0.20)
+
+**Merged pull requests:**
+
+- Validate config setters [\#15](https://github.com/bootic/bootic_client.rb/pull/15) ([ismasan](https://github.com/ismasan))
+- Whitelist undeclared params [\#12](https://github.com/bootic/bootic_client.rb/pull/12) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.19](https://github.com/bootic/bootic_client.rb/tree/v0.0.19) (2017-06-01)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.18...v0.0.19)
 
