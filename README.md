@@ -28,11 +28,14 @@ You first must create an OAuth2 Application in your Bootic dashboard. Then confi
 
 ```ruby
 BooticClient.configure do |c|
+  # these are required for OAuth2 strategies
   c.client_id = ENV['BOOTIC_CLIENT_ID']
   c.client_secret = ENV['BOOTIC_CLIENT_SECRET']
+  # these are optional
   c.logger = Logger.new(STDOUT)
   c.logging = true
   c.cache_store = Rails.cache
+  c.user_agent = "My App v1"
 end
 ```
 
