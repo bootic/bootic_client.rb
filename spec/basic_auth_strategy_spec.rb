@@ -34,7 +34,8 @@ describe 'BooticClient::Strategies::BasicAuth' do
 
   context 'with invalid BasicAuth credentials' do
     let!(:root_request) do
-      stub_request(:get, 'https://foo:bar@api.bootic.net/v1')
+      stub_request(:get, 'https://api.bootic.net/v1')
+        .with(basic_auth: ['foo', 'bar'])
         .to_return(status: 401, body: JSON.dump(root_data))
     end
 
@@ -46,12 +47,14 @@ describe 'BooticClient::Strategies::BasicAuth' do
 
   context 'with valid BasicAuth credentials' do
     let!(:root_request) do
-      stub_request(:get, 'https://foo:bar@api.bootic.net/v1')
+      stub_request(:get, 'https://api.bootic.net/v1')
+        .with(basic_auth: ['foo', 'bar'])
         .to_return(status: 200, body: JSON.dump(root_data))
     end
 
     let!(:product_request) do
-      stub_request(:get, 'https://foo:bar@api.bootic.net/v1/products/1')
+      stub_request(:get, 'https://api.bootic.net/v1/products/1')
+        .with(basic_auth: ['foo', 'bar'])
         .to_return(status: 200, body: JSON.dump(product_data))
     end
 
