@@ -26,7 +26,7 @@ describe BooticClient::Relation do
 
     describe 'running GET by default' do
       it 'fetches data and returns entity' do
-        allow(client).to receive(:request_and_wrap).with(:get, '/foo/bars', BooticClient::Entity, {}).and_return entity
+        allow(client).to receive(:request_and_wrap).with(:get, '/foo/bars', {}).and_return entity
         expect(relation.run).to eql(entity)
       end
 
@@ -42,7 +42,7 @@ describe BooticClient::Relation do
         end
 
         it 'passes query string to client' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/bar', BooticClient::Entity, id: 2, q: 'test', page: 2).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/bar', id: 2, q: 'test', page: 2).and_return entity
           expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
         end
       end
@@ -61,7 +61,7 @@ describe BooticClient::Relation do
         end
 
         it 'works with defaults' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/123', BooticClient::Entity, {}).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/123', {}).and_return entity
           expect(relation.run(id: 123)).to eql(entity)
         end
 
@@ -70,7 +70,7 @@ describe BooticClient::Relation do
         end
 
         it 'interpolates tokens' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', BooticClient::Entity, {}).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=2', {}).and_return entity
           expect(relation.run(id: 2, q: 'test', page: 2)).to eql(entity)
         end
 
@@ -92,7 +92,7 @@ describe BooticClient::Relation do
             client,
           )
 
-          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=3', BooticClient::Entity, {foo: 1}).and_return entity
+          expect(client).to receive(:request_and_wrap).with(:get, '/foos/2?q=test&page=3', {foo: 1}).and_return entity
 
           relation.run(id: 2, q: 'test', page: 3, foo: 1)
 
@@ -106,12 +106,12 @@ describe BooticClient::Relation do
       let(:relation_templated) { BooticClient::Relation.new({'href' => '/foo/{bars}', 'templated' => true, 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
 
       it 'POSTS data and returns resulting entity' do
-        allow(client).to receive(:request_and_wrap).with(:post, '/foo/bars', BooticClient::Entity, {}).and_return entity
+        allow(client).to receive(:request_and_wrap).with(:post, '/foo/bars', {}).and_return entity
         expect(relation.run).to eql(entity)
       end
 
       it 'interpolates templated URLs and sends remaining as BODY' do
-        allow(client).to receive(:request_and_wrap).with(:post, '/foo/123', BooticClient::Entity, {foo: 'bar'}).and_return entity
+        allow(client).to receive(:request_and_wrap).with(:post, '/foo/123', {foo: 'bar'}).and_return entity
         expect(relation_templated.run(bars: 123, foo: 'bar')).to eql(entity)
       end
     end
@@ -120,7 +120,7 @@ describe BooticClient::Relation do
       let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'delete'}, client) }
 
       it 'DELETEs data and returns resulting entity' do
-        allow(client).to receive(:request_and_wrap).with(:delete, '/foo/bars', BooticClient::Entity, {}).and_return entity
+        allow(client).to receive(:request_and_wrap).with(:delete, '/foo/bars', {}).and_return entity
         expect(relation.run).to eql(entity)
       end
     end

@@ -164,7 +164,7 @@ describe BooticClient::Entity do
         let(:next_page) { BooticClient::Entity.new({'page' => 2}, client) }
 
         it 'exposes link target resources as normal properties' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', BooticClient::Entity, {}).and_return next_page
+          expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return next_page
           entity.next.tap do |next_entity|
             expect(next_entity).to be_kind_of(BooticClient::Entity)
             expect(next_entity.page).to eql(2)
@@ -172,7 +172,7 @@ describe BooticClient::Entity do
         end
 
         it 'takes optional URI parameters' do
-          expect(client).to receive(:request_and_wrap).with(:get, '/search?q=foo', BooticClient::Entity, {}).and_return next_page
+          expect(client).to receive(:request_and_wrap).with(:get, '/search?q=foo', {}).and_return next_page
           entity.search(q: 'foo').tap do |next_entity|
             expect(next_entity).to be_kind_of(BooticClient::Entity)
             expect(next_entity.page).to eql(2)
@@ -226,8 +226,8 @@ describe BooticClient::Entity do
       let(:page_2) { BooticClient::Entity.new(page_2_data, client) }
 
       it 'lazily enumerates entries across pages, making as little requests as possible' do
-        expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', BooticClient::Entity, {}).and_return page_2
-        expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', BooticClient::Entity, {})
+        expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return page_2
+        expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', {})
         results = entity.full_set.first(4)
         titles = results.map(&:title)
         expect(titles).to match_array(['iPhone 4', 'iPhone 5', 'Item 3', 'Item 4'])
