@@ -62,6 +62,8 @@ module BooticClient
 
     protected
 
+    JSON_MIME_EXP = /^application\/json/.freeze
+
     def conn(&block)
       @conn ||= Faraday.new do |f|
         cache_options = {shared_cache: false, store: options[:cache_store]}
@@ -69,7 +71,7 @@ module BooticClient
 
         f.use :http_cache, cache_options
         f.response :logger, options[:logger] if options[:logging]
-        f.response :json
+        f.response :json, content_type: JSON_MIME_EXP
         yield f if block_given?
         f.adapter *Array(options[:faraday_adapter])
       end
