@@ -10,12 +10,13 @@ module BooticClient
         %(#<#{self.class.name} cid: #{config.client_id} root: #{config.api_root} auth: #{config.auth_host}>)
       end
 
-      protected
+      private
 
       def validate!
-        raise ArgumentError, "MUST include client_id" unless config.client_id
-        raise ArgumentError, "MUST include client_secret" unless config.client_secret
-        raise ArgumentError, "MUST include api_root" unless config.api_root
+        raise ArgumentError, 'must include a Configuration object' unless config
+        raise ArgumentError, 'MUST include client_id' unless config.client_id
+        raise ArgumentError, 'MUST include client_secret' unless config.client_secret
+        raise ArgumentError, 'MUST include api_root' unless config.api_root
       end
 
       def pre_flight

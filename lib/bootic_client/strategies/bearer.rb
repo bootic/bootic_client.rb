@@ -7,7 +7,7 @@ module BooticClient
       private
 
       def validate!
-        raise ArgumentError, "options MUST include access_token" unless options[:access_token]
+        raise ArgumentError, 'options MUST include access_token' unless options[:access_token]
       end
 
       def request_headers
