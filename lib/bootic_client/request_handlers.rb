@@ -18,8 +18,12 @@ module BooticClient
         custom || response
       end
 
-      def add(handler)
+      def append(handler)
         @handlers << handler
+      end
+
+      def prepend(handler)
+        @handlers.unshift handler
       end
 
       def to_a

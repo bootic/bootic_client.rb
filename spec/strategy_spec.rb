@@ -43,7 +43,7 @@ describe BooticClient::Strategies::Strategy do
       it 'uses available request handlers' do
         custom_resp = Struct.new(:message)
 
-        config.request_handlers.add(Proc.new { |resp, client|
+        config.request_handlers.append(Proc.new { |resp, client|
           if resp.headers['Content-Type'] == 'text/plain'
             custom_resp.new(resp.body)
           end

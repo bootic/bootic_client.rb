@@ -19,7 +19,7 @@ describe BooticClient::RequestHandlers::Set do
   let(:h3) do
     Proc.new do |resp, _client|
       if resp.headers['Content-Type'] =~ /json/
-        'not found, theres a previous json one'
+        'H3'
       end
     end
   end
@@ -47,15 +47,27 @@ describe BooticClient::RequestHandlers::Set do
     end
   end
 
-  describe '#add' do
+  describe '#append' do
     it 'adds handlers' do
       set = described_class.new
 
       text_resp = instance_double(::Faraday::Response, headers: {'Content-Type' => 'text/plain'})
       expect(set.resolve(text_resp, nil)).to eq text_resp
 
-      set.add(h2)
+      set.append(h2)
       expect(set.resolve(text_resp, nil)).to eq 'H2'
+    end
+  end
+
+  describe '#prepend' do
+    it 'prepends handlers' do
+      set = described_class.new([h1, h2])
+
+      json_resp = instance_double(::Faraday::Response, headers: {'Content-Type' => 'application/json'})
+      expect(set.resolve(json_resp, nil)).to eq 'H1'
+
+      set.prepend(h3)
+      expect(set.resolve(json_resp, nil)).to eq 'H3'
     end
   end
 end
