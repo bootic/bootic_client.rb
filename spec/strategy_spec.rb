@@ -27,7 +27,7 @@ describe BooticClient::Strategies::Strategy do
       end
     end
 
-    context 'response is NOT JSON' do
+    context 'response type is not handled' do
       before do
         stub_request(:get, 'https://a.server.com/foo')
           .to_return(status: 200, body: 'abc', headers: {'Content-Type' => 'text/plain'})
@@ -52,6 +52,21 @@ describe BooticClient::Strategies::Strategy do
         resp = strategy.request_and_wrap(:get, 'https://a.server.com/foo')
         expect(resp).to be_a custom_resp
         expect(resp.message).to eq 'abc'
+      end
+    end
+
+    context 'response is an image' do
+      before do
+        stub_request(:get, 'https://a.server.com/a/b/foo.jpg')
+          .to_return(status: 200, body: 'abc', headers: {'Content-Type' => 'image/jpeg'})
+      end
+
+      it 'returns an IO-like object' do
+        img = strategy.request_and_wrap(:get, 'https://a.server.com/a/b/foo.jpg')
+        expect(img.io).to be_a StringIO
+        expect(img.read).to eq 'abc'
+        expect(img.file_name).to eq 'foo.jpg'
+        expect(img.mime_type).to eq 'image/jpeg'
       end
     end
   end

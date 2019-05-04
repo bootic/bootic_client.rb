@@ -54,7 +54,10 @@ module BooticClient
     end
 
     def request_handlers
-      @request_handlers ||= RequestHandlers::Set.new([RequestHandlers::Hal])
+      @request_handlers ||= RequestHandlers::Set.new([
+        RequestHandlers::Hal,
+        RequestHandlers::File
+      ])
     end
 
     private

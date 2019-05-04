@@ -28,12 +28,29 @@ module BooticClient
     end
 
     JSON_MIME_EXP = /^application\/json/.freeze
+    IMAGE_MIME_EXP = /^image\//.freeze
     CONTENT_TYPE = 'Content-Type'.freeze
+    IO = Struct.new(:io, :file_name, :mime_type) do
+      def read
+        io.read
+      end
+    end
 
     Hal = Proc.new do |resp, client|
       if resp.headers[CONTENT_TYPE] =~ JSON_MIME_EXP
         data = ::JSON.parse(resp.body)
         Entity.new(data, client)
+      end
+    end
+
+    File = Proc.new do |resp, client|
+      if resp.headers[CONTENT_TYPE] =~ IMAGE_MIME_EXP
+        fname = ::File.basename(resp.env[:url].to_s)
+        IO.new(
+          StringIO.new(resp.body),
+          fname,
+          resp.headers[CONTENT_TYPE]
+        )
       end
     end
   end
