@@ -15,7 +15,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
 
   describe 'with missing client credentials' do
     it 'raises error' do
-      allow(BooticClient).to receive(:client_id).and_return nil
+      allow(BooticClient.configuration).to receive(:client_id).and_return nil
       expect{
         BooticClient.client(:client_credentials, scope: 'admin')
       }.to raise_error(ArgumentError)
