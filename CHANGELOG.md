@@ -1,5 +1,15 @@
 # Change Log
 
+## [Unreleased](https://github.com/bootic/bootic_client.rb/tree/HEAD)
+
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.21...HEAD)
+
+**Merged pull requests:**
+
+- Custom response handlers [\#18](https://github.com/bootic/bootic_client.rb/pull/18) ([ismasan](https://github.com/ismasan))
+- Wrap all hash properties in Entity.new, even if not in \_embedded group. [\#17](https://github.com/bootic/bootic_client.rb/pull/17) ([ismasan](https://github.com/ismasan))
+- Make configuration an instance [\#16](https://github.com/bootic/bootic_client.rb/pull/16) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.21](https://github.com/bootic/bootic_client.rb/tree/v0.0.21) (2018-08-30)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.20...v0.0.21)
 
