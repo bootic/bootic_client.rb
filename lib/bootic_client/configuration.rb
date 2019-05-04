@@ -1,4 +1,4 @@
-require 'bootic_client/request_handlers'
+require 'bootic_client/response_handlers'
 
 module BooticClient
   InvalidConfigurationError = Class.new(StandardError)
@@ -53,10 +53,10 @@ module BooticClient
       @logger || ::Logger.new(STDOUT)
     end
 
-    def request_handlers
-      @request_handlers ||= RequestHandlers::Set.new([
-        RequestHandlers::Hal,
-        RequestHandlers::File
+    def response_handlers
+      @response_handlers ||= ResponseHandlers::Set.new([
+        ResponseHandlers::Hal,
+        ResponseHandlers::File
       ])
     end
 

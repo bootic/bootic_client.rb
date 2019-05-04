@@ -66,9 +66,9 @@ describe BooticClient::Configuration do
   context 'instance' do
     subject(:config) { described_class.new }
 
-    describe '#request_handlers' do
+    describe '#response_handlers' do
       it 'includes Entity handler by default' do
-        expect(config.request_handlers.to_a.first).not_to be_nil
+        expect(config.response_handlers.to_a.first).not_to be_nil
       end
     end
   end

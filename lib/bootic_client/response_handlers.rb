@@ -1,7 +1,7 @@
 require 'json'
 
 module BooticClient
-  module RequestHandlers
+  module ResponseHandlers
     class Set
       def initialize(handlers = [])
         @handlers = handlers

@@ -26,7 +26,7 @@ module BooticClient
         pre_flight
         retryable do
           resp = client.send(request_method, href, payload, request_headers)
-          config.request_handlers.resolve(resp, self)
+          config.response_handlers.resolve(resp, self)
         end
       end
 

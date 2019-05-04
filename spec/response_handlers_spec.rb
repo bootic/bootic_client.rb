@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'bootic_client/request_handlers'
+require 'bootic_client/response_handlers'
 
-describe BooticClient::RequestHandlers::Set do
+describe BooticClient::ResponseHandlers::Set do
   let(:h1) do
     Proc.new do |resp, _client|
       if resp.headers['Content-Type'] =~ /json/
