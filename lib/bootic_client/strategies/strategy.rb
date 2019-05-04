@@ -6,6 +6,7 @@ module BooticClient
 
       def initialize(config, client_opts = {}, &on_new_token)
         @config, @options, @on_new_token = config, client_opts, (on_new_token || Proc.new{})
+        raise ArgumentError, 'must include a Configuration object' unless config
         validate!
       end
 

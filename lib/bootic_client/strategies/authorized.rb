@@ -8,7 +8,6 @@ module BooticClient
 
       def validate!
         raise ArgumentError, 'options MUST include access_token' unless options[:access_token]
-        raise ArgumentError, 'must include a Configuration object' unless config
       end
 
       def get_token
