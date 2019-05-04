@@ -18,6 +18,10 @@ module BooticClient
         custom || response
       end
 
+      def add(handler)
+        @handlers << handler
+      end
+
       def to_a
         @handlers
       end
