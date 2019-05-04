@@ -4,7 +4,7 @@ module BooticClient
   module Strategies
 
     class ClientCredentials < Oauth2Strategy
-      protected
+      private
 
       def get_token
         opts = {}

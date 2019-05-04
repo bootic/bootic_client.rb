@@ -8,11 +8,11 @@ module BooticClient
         %(#<#{self.class.name} root: #{config.api_root} username: #{options[:username]}>)
       end
 
-      protected
+      private
 
       def validate!
-        raise ArgumentError, "options MUST include username" unless options[:username]
-        raise ArgumentError, "options MUST include password" unless options[:password]
+        raise ArgumentError, 'options MUST include username' unless options[:username]
+        raise ArgumentError, 'options MUST include password' unless options[:password]
       end
 
       def client
