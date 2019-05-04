@@ -218,6 +218,49 @@ asset = product.create_product_asset(
 )
 ```
 
+## Non-JSON responses
+
+HTTP responses are resolved by handler callables in `BooticClient::Configuration#response_handlers`.
+
+The default stack is:
+
+* `BooticClient::ResponseHandlers::Hal`: handles `application/json` responses and wraps JSON data in `BooticClient::Entity` instances.
+* `BooticClient::ResponseHandlers::File`: handles `image/*` responses and wraps image data in IO-like objects.
+
+```ruby
+# Fetching product images and saving them to local files:
+product.images.each do |img|
+  io = img.original # HTTP request to image file
+  # now write image data to local file.
+  File.open(io.file_name, 'wb') do |f|
+    f.write io.read
+  end
+end
+```
+
+You can register custom response handlers. The example below parses CSV response data.
+
+```ruby
+require 'csv'
+
+# Response handlers are callable (anything that responds to #call(faraday_response, client)
+# if a handler returns `nil`, the next handler in the stack will be called.
+CSVHandler = Proc.new do |resp, _client|
+  if resp.headers['Content-Type'] =~ /text\/csv/
+    CSV.parse(resp.body, headings: true)
+  end
+end
+
+BooticClient.configure do |c|
+  c.response_handlers.append(CSVHandler)
+end
+
+# Now CSV resources will be returned as parsed CSV data
+client = BooticClient.client(:authorized, access_token: 'abc')
+root = client.root
+csv = root.some_csv_resource # returns parsed CSV object.
+```
+
 ## Relation docs
 
 All resource link relations include a "docs" URL so you can learn more about that particular resource.

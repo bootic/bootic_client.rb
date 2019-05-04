@@ -18,8 +18,8 @@ module BooticClient
       end
     end
 
-    def initialize(attrs, client, entity_class: Entity, complain_on_undeclared_params: self.class.complain_on_undeclared_params)
-      @attrs, @client, @entity_class = attrs, client, entity_class
+    def initialize(attrs, client, complain_on_undeclared_params: self.class.complain_on_undeclared_params)
+      @attrs, @client = attrs, client
       @complain_on_undeclared_params = complain_on_undeclared_params
     end
 
@@ -71,9 +71,9 @@ module BooticClient
         end
         # remove payload vars from URI opts if destructive action
         opts = opts.reject{|k, v| !uri_vars.include?(k.to_s) } if destructive?
-        client.request_and_wrap transport_method.to_sym, uri.expand(opts), entity_class, payload
+        client.request_and_wrap transport_method.to_sym, uri.expand(opts), payload
       else
-        client.request_and_wrap transport_method.to_sym, href, entity_class, opts
+        client.request_and_wrap transport_method.to_sym, href, opts
       end
     end
 
@@ -82,7 +82,7 @@ module BooticClient
     end
 
     protected
-    attr_reader :entity_class, :client, :attrs, :complain_on_undeclared_params
+    attr_reader :client, :attrs, :complain_on_undeclared_params
 
     def uri
       @uri ||= WhinyURI.new(href, complain_on_undeclared_params)

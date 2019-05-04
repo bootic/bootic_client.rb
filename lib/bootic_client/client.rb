@@ -60,7 +60,7 @@ module BooticClient
       end
     end
 
-    protected
+    private
 
     def conn(&block)
       @conn ||= Faraday.new do |f|
@@ -69,7 +69,6 @@ module BooticClient
 
         f.use :http_cache, cache_options
         f.response :logger, options[:logger] if options[:logging]
-        f.response :json
         yield f if block_given?
         f.adapter *Array(options[:faraday_adapter])
       end
