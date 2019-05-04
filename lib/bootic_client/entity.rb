@@ -1,5 +1,4 @@
 require "bootic_client/relation"
-require 'ostruct'
 
 module BooticClient
   module EnumerableEntity
@@ -60,7 +59,7 @@ module BooticClient
 
     def properties
       @properties ||= attrs.select{|k,v| !(k =~ SPECIAL_PROP_EXP)}.each_with_object({}) do |(k,v),memo|
-        memo[k.to_sym] = Entity.wrap(v)
+        memo[k.to_sym] = Entity.wrap(v, client: client, top: top)
       end
     end
 
@@ -68,10 +67,10 @@ module BooticClient
       @links ||= attrs.fetch('_links', {})
     end
 
-    def self.wrap(obj)
+    def self.wrap(obj, client: nil, top: nil)
       case obj
       when Hash
-        OpenStruct.new(obj)
+        new(obj, client, top: top)
       when Array
         obj.map{|e| wrap(e)}
       else
@@ -129,7 +128,7 @@ module BooticClient
       )
     end
 
-    protected
+    private
 
     attr_reader :client, :top, :attrs
 
