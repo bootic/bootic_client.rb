@@ -42,7 +42,8 @@ module BooticClient
 
     Hal = Proc.new do |resp, client|
       if resp.headers[CONTENT_TYPE] =~ JSON_MIME_EXP
-        data = ::JSON.parse(resp.body)
+        body = resp.body
+        data = body.strip.empty? ? {} : ::JSON.parse(body)
         Entity.new(data, client)
       end
     end
