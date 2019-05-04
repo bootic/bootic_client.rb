@@ -1,3 +1,5 @@
+require 'bootic_client/request_handlers'
+
 module BooticClient
   InvalidConfigurationError = Class.new(StandardError)
   VERY_BASIC_URL_CHECK = /^(http|https):/.freeze
@@ -49,6 +51,10 @@ module BooticClient
 
     def logger
       @logger || ::Logger.new(STDOUT)
+    end
+
+    def request_handlers
+      @request_handlers ||= RequestHandlers::Set.new([RequestHandlers::Hal])
     end
 
     private

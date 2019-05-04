@@ -26,8 +26,7 @@ module BooticClient
         pre_flight
         retryable do
           resp = client.send(request_method, href, payload, request_headers)
-          BooticClient::Entity.new(resp.body, self)
-          # wrapper_class.new(resp.body, self)
+          config.request_handlers.resolve(resp, self)
         end
       end
 
