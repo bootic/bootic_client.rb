@@ -60,14 +60,25 @@ module BooticClient
       end
     end
 
+    class UTF8JSON
+      def self.dump(data)
+        data[:body] = data[:body].force_encoding('UTF-8') if data[:body].is_a?(String)
+        JSON.dump(data)
+      end
+
+      def self.load(string)
+        JSON.load(string)
+      end
+    end
+
     private
 
     def conn(&block)
       @conn ||= Faraday.new do |f|
-        cache_options = {serializer: Marshal, shared_cache: false, store: options[:cache_store]}
+        cache_options = {serializer: UTF8JSON, shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
-        # f.use :http_cache, cache_options
+        f.use :http_cache, cache_options
         f.response :logger, options[:logger] if options[:logging]
         yield f if block_given?
         f.adapter *Array(options[:faraday_adapter])

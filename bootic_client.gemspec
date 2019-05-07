@@ -18,12 +18,12 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "faraday", '~> 0.9'
+  spec.add_dependency "faraday", '~> 0.15'
   spec.add_dependency "uri_template", '~> 0.7'
-  spec.add_dependency "faraday_middleware", '~> 0.9'
-  spec.add_dependency "faraday-http-cache", '1.2.2'
+  spec.add_dependency "faraday_middleware", '~> 0.13'
+  spec.add_dependency "faraday-http-cache", '~> 2'
   spec.add_dependency "net-http-persistent", '~> 2.9'
-  spec.add_dependency "oauth2", "1.3.1"
+  spec.add_dependency "oauth2", "~> 1.4"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
