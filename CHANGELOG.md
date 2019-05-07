@@ -1,5 +1,15 @@
 # Change Log
 
+## [v0.0.24](https://github.com/bootic/bootic_client.rb/tree/v0.0.24) (2019-05-07)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.23...v0.0.24)
+
+**Merged pull requests:**
+
+- Update gems, fix HTTP cache [\#20](https://github.com/bootic/bootic_client.rb/pull/20) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.23](https://github.com/bootic/bootic_client.rb/tree/v0.0.23) (2019-05-04)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.22...v0.0.23)
+
 ## [v0.0.22](https://github.com/bootic/bootic_client.rb/tree/v0.0.22) (2019-05-04)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.21...v0.0.22)
 
@@ -11,6 +21,10 @@
 
 ## [v0.0.21](https://github.com/bootic/bootic_client.rb/tree/v0.0.21) (2018-08-30)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.20...v0.0.21)
+
+**Merged pull requests:**
+
+- Add :user\_agent option [\#13](https://github.com/bootic/bootic_client.rb/pull/13) ([ismasan](https://github.com/ismasan))
 
 ## [v0.0.20](https://github.com/bootic/bootic_client.rb/tree/v0.0.20) (2018-07-05)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.19...v0.0.20)
@@ -53,7 +67,6 @@
 
 **Merged pull requests:**
 
-- Add :user\_agent option [\#13](https://github.com/bootic/bootic_client.rb/pull/13) ([ismasan](https://github.com/ismasan))
 - Base64-encode any attribute that responds to \#read [\#7](https://github.com/bootic/bootic_client.rb/pull/7) ([ismasan](https://github.com/ismasan))
 
 ## [v0.0.14](https://github.com/bootic/bootic_client.rb/tree/v0.0.14) (2016-04-26)
@@ -73,6 +86,10 @@
 ## [v0.0.12](https://github.com/bootic/bootic_client.rb/tree/v0.0.12) (2016-01-11)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.11...v0.0.12)
 
+**Merged pull requests:**
+
+- Faraday http cache 1.2.2, Vary header support. [\#4](https://github.com/bootic/bootic_client.rb/pull/4) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.11](https://github.com/bootic/bootic_client.rb/tree/v0.0.11) (2015-10-28)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.10...v0.0.11)
 
@@ -91,7 +108,6 @@
 
 **Merged pull requests:**
 
-- Faraday http cache 1.2.2, Vary header support. [\#4](https://github.com/bootic/bootic_client.rb/pull/4) ([ismasan](https://github.com/ismasan))
 - Basic auth strategy [\#2](https://github.com/bootic/bootic_client.rb/pull/2) ([ismasan](https://github.com/ismasan))
 
 ## [v0.0.7](https://github.com/bootic/bootic_client.rb/tree/v0.0.7) (2015-03-07)
