@@ -1,6 +1,5 @@
 require 'base64'
 require 'faraday'
-require 'faraday_middleware'
 require 'faraday-http-cache'
 require "bootic_client/errors"
 require 'faraday/adapter/net_http_persistent'

@@ -20,7 +20,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "faraday", '~> 0.15'
   spec.add_dependency "uri_template", '~> 0.7'
-  spec.add_dependency "faraday_middleware", '~> 0.13'
   spec.add_dependency "faraday-http-cache", '~> 2'
   spec.add_dependency "net-http-persistent", '~> 2.9'
   spec.add_dependency "oauth2", "~> 1.4"
