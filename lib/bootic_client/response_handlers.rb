@@ -35,8 +35,8 @@ module BooticClient
     IMAGE_MIME_EXP = /^image\//.freeze
     CONTENT_TYPE = 'Content-Type'.freeze
     IO = Struct.new(:io, :file_name, :mime_type) do
-      def read
-        io.read
+      def read(length = nil, outbuff = nil)
+        io.read(length, outbuff)
       end
     end
 
