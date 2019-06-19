@@ -1,5 +1,13 @@
 # Change Log
 
+## [Unreleased](https://github.com/bootic/bootic_client.rb/tree/HEAD)
+
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.24...HEAD)
+
+**Merged pull requests:**
+
+- Make HTTP cache serialize binary data \(ex. images\) safely [\#21](https://github.com/bootic/bootic_client.rb/pull/21) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.24](https://github.com/bootic/bootic_client.rb/tree/v0.0.24) (2019-05-07)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.23...v0.0.24)
 
