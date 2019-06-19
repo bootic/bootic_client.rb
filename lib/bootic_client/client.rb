@@ -59,14 +59,21 @@ module BooticClient
       end
     end
 
-    class UTF8JSON
+    class SafeCacheSerializer
+      PREFIX = '__booticclient__base64__:'.freeze
+      PREFIX_EXP = %r{^#{PREFIX}}.freeze
+
       def self.dump(data)
-        data[:body] = data[:body].force_encoding('UTF-8') if data[:body].is_a?(String)
+        data[:body] = "#{PREFIX}#{Base64.strict_encode64(data[:body])}" if data[:body].is_a?(String)
         JSON.dump(data)
       end
 
       def self.load(string)
-        JSON.load(string)
+        data = JSON.load(string)
+        if data['body'] =~ PREFIX_EXP
+          data['body'] = Base64.strict_decode64(data['body'].sub(PREFIX, ''))
+        end
+        data
       end
     end
 
@@ -74,7 +81,7 @@ module BooticClient
 
     def conn(&block)
       @conn ||= Faraday.new do |f|
-        cache_options = {serializer: UTF8JSON, shared_cache: false, store: options[:cache_store]}
+        cache_options = {serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
         f.use :http_cache, cache_options
