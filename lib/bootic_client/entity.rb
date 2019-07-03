@@ -72,7 +72,7 @@ module BooticClient
       when Hash
         new(obj, client, top: top)
       when Array
-        obj.map{|e| wrap(e)}
+        obj.map{|e| wrap(e, client: client, top: top)}
       else
         obj
       end
