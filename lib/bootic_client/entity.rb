@@ -5,7 +5,7 @@ module BooticClient
     include Enumerable
 
     def each(&block)
-      self[:items].each &block
+      entities.get(:items).each &block
     end
 
     def full_set
@@ -13,7 +13,7 @@ module BooticClient
 
       Enumerator.new do |yielder|
         loop do
-          page.each{|item| yielder.yield item }
+          page.each { |item| yielder.yield item }
           raise StopIteration unless page.has_rel?(:next)
           page = page.next
         end
@@ -23,7 +23,7 @@ module BooticClient
 
   class Entity
 
-    CURIE_EXP = /(.+):(.+)/.freeze
+    CURIE_NS = 'btc'
     CURIES_REL = 'curies'.freeze
     SPECIAL_PROP_EXP = /^_.+/.freeze
 
@@ -32,7 +32,7 @@ module BooticClient
     def initialize(attrs, client, top: self)
       @attrs = attrs.kind_of?(Hash) ? attrs : {}
       @client, @top = client, top
-      build!
+
       self.extend EnumerableEntity if iterable?
     end
 
@@ -41,8 +41,7 @@ module BooticClient
     end
 
     def [](key)
-      key = key.to_sym
-      has_property?(key) ? properties[key] : entities[key]
+      has_property?(key) ? properties.get(key) : entities.get(key)
     end
 
     def has?(prop_name)
@@ -58,9 +57,15 @@ module BooticClient
     end
 
     def properties
-      @properties ||= attrs.select{|k,v| !(k =~ SPECIAL_PROP_EXP)}.each_with_object({}) do |(k,v),memo|
-        memo[k.to_sym] = Entity.wrap(v, client: client, top: top)
-      end
+      @properties ||= EntitySet.new(attrs.select { |k,v| !(k =~ SPECIAL_PROP_EXP) }, client, top)
+    end
+
+    def entities
+      @entities ||= EntitySet.new(attrs.fetch('_embedded', {}), client, top)
+    end
+
+    def rels
+      @rels ||= RelationSet.new(attrs.fetch('_links', {}), client, top, curies)
     end
 
     def links
@@ -72,7 +77,7 @@ module BooticClient
       when Hash
         new(obj, client, top: top)
       when Array
-        obj.map{|e| wrap(e, client: client, top: top)}
+        obj.map { |e| wrap(e, client: client, top: top) }
       else
         obj
       end
@@ -81,11 +86,11 @@ module BooticClient
     def method_missing(name, *args, &block)
       if !block_given?
         if has_property?(name)
-          self[name]
+          properties.get(name)
         elsif has_entity?(name)
-          entities[name]
+          entities.get(name)
         elsif has_rel?(name)
-          rels[name].run(*args)
+          rels.get(name).run(*args)
         else
           super
         end
@@ -98,54 +103,95 @@ module BooticClient
       has?(method_name)
     end
 
-    def has_property?(prop_name)
-      properties.has_key? prop_name.to_sym
+    def has_property?(name)
+      properties.has?(name)
     end
 
-    def has_entity?(prop_name)
-      entities.has_key? prop_name.to_sym
+    def has_entity?(name)
+      entities.has?(name)
     end
 
-    def has_rel?(prop_name)
-      rels.has_key? prop_name.to_sym
-    end
-
-    def rels
-      @rels ||= (
-        links = attrs.fetch('_links', {})
-        links.each_with_object({}) do |(rel,rel_attrs),memo|
-          if rel =~ CURIE_EXP
-            _, curie_namespace, rel = rel.split(CURIE_EXP)
-            if curie = curies.find{|c| c['name'] == curie_namespace}
-              rel_attrs['docs'] = Relation.expand(curie['href'], rel: rel)
-            end
-          end
-          if rel != CURIES_REL
-            rel_attrs['name'] = rel
-            memo[rel.to_sym] = Relation.new(rel_attrs, client)
-          end
-        end
-      )
+    def has_rel?(name)
+      rels.has?(name)
     end
 
     private
 
     attr_reader :client, :top, :attrs
 
-    def iterable?
-      has_entity?(:items) && entities[:items].respond_to?(:each)
+    def curies
+      @curies ||= top.links.fetch('curies', [])
     end
 
-    def build!
-      @curies = top.links.fetch('curies', [])
+    def iterable?
+      entities.has?(:items) && entities.get(:items).respond_to?(:each)
+    end
 
-      @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
-        memo[k.to_sym] = if v.kind_of?(Array)
-          v.map{|ent_attrs| Entity.new(ent_attrs, client, top: top)}
-        else
-          Entity.new(v, client, top: top)
+
+    class EntitySet
+      def initialize(attrs, client, top)
+        @attrs = stringify_keys(attrs || {})
+        @client, @top = client, top
+        @cache = {}
+      end
+
+      def has?(key)
+        @attrs.has_key?(key.to_s)
+      end
+
+      def keys
+        @keys ||= @attrs.keys
+      end
+
+      def [](key)
+        get(key)
+      end
+
+      def get(key)
+        @cache[key.to_s] ||= Entity.wrap(@attrs[key.to_s], client: @client, top: @top)
+      end
+
+      # def all
+      #   keys.map { |k| get(key) }
+      # end
+
+      private
+
+      def stringify_keys(hash)
+        hash.inject({}) { |memo,(k,v)| memo[k.to_s] = v; memo }
+      end
+
+    end
+
+    class RelationSet < EntitySet
+
+      def initialize(attrs, client, top, curies)
+        super(attrs, client, top)
+        @curies = curies
+      end
+
+      def has?(key)
+        super || @attrs.has_key?("#{CURIE_NS}:#{key}")
+      end
+
+      def get(key)
+        return if key.to_s == CURIES_REL
+
+        @cache[key.to_s] ||= begin
+          key = key.to_s
+          obj = @attrs[key]
+
+          if obj.nil? and obj = @attrs["#{CURIE_NS}:#{key}"]
+            if curie = @curies.find { |c| c['name'] == CURIE_NS }
+              obj['docs'] = Relation.expand(curie['href'], rel: key)
+            end
+          end
+
+          Relation.new(obj, @client)
         end
       end
+
     end
+
   end
 end
