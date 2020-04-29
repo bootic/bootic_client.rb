@@ -136,6 +136,10 @@ module BooticClient
         @attrs
       end
 
+      def dig(*keys)
+        @attrs.dig(*keys)
+      end
+
       def has?(key)
         @attrs.has_key?(key.to_s)
       end
