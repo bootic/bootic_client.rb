@@ -92,6 +92,18 @@ describe BooticClient::Entity do
       expect(entity.has?(:foobar)).to eql(false)
     end
 
+    it 'responds to #[]' do
+      expect(entity[:total_items]).to eql(10)
+      expect(entity[:items]).to be_a(Array)
+      expect(entity[:foobar]).to eql(nil)
+    end
+
+    it 'responds to #try (same behaviour as [])' do
+      expect(entity.try(:total_items)).to eql(10)
+      expect(entity.try(:items)).to be_a(Array)
+      expect(entity.try(:foobar)).to eql(nil)
+    end
+
     describe '#to_hash' do
       it 'returns original data' do
         expect(entity.to_hash).to eql(list_payload)

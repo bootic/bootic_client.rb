@@ -44,6 +44,8 @@ module BooticClient
       has_property?(key) ? properties.get(key) : entities.get(key)
     end
 
+    alias_method :try, :[]
+
     def has?(prop_name)
       has_property?(prop_name) || has_entity?(prop_name) || has_rel?(prop_name)
     end
@@ -145,17 +147,20 @@ module BooticClient
       end
 
       def get(key)
-        cache[key.to_s] ||= (
-          value = @attrs[key.to_s]
-          case value
-          when Hash
-            PropertySet.new(value)
-          when Array
-            value.map { |e| PropertySet.new(e) }
-          else
-            value
-          end
-        )
+        cache[key.to_s] ||= wrap(@attrs[key.to_s])
+      end
+
+      private
+
+      def wrap(value)
+        case value
+        when Hash
+          PropertySet.new(value)
+        when Array
+          value.map { |e| wrap(e) }
+        else
+          value
+        end
       end
 
       private
