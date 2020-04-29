@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'oauth2'
 require 'bootic_client/strategies/strategy'
 

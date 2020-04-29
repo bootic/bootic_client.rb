@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bootic_client/strategies/oauth2_strategy'
 
 module BooticClient
