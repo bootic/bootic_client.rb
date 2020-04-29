@@ -75,10 +75,10 @@ describe BooticClient::Entity do
     end
 
     it 'wraps object properties as entities' do
-      expect(entity.an_object).to be_a described_class
+      expect(entity.an_object).to be_a BooticClient::Entity::PropertySet
       expect(entity.an_object.name).to eql('Foobar')
       expect(entity.an_object.age).to eql(22)
-      expect(entity.an_object.another_object).to be_a described_class
+      expect(entity.an_object.another_object).to be_a BooticClient::Entity::PropertySet
       expect(entity.an_object.another_object.foo).to eq 'bar'
     end
 

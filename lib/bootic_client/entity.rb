@@ -57,7 +57,7 @@ module BooticClient
     end
 
     def properties
-      @properties ||= EntitySet.new(attrs.select { |k,v| !(k =~ SPECIAL_PROP_EXP) }, client, top)
+      @properties ||= PropertySet.new(attrs.select { |k,v| !(k =~ SPECIAL_PROP_EXP) })
     end
 
     def entities
@@ -127,12 +127,9 @@ module BooticClient
       entities.has?(:items) && entities.get(:items).respond_to?(:each)
     end
 
-
-    class EntitySet
-      def initialize(attrs, client, top)
+    class PropertySet
+      def initialize(attrs)
         @attrs = stringify_keys(attrs || {})
-        @client, @top = client, top
-        @cache = {}
       end
 
       def has?(key)
@@ -148,7 +145,31 @@ module BooticClient
       end
 
       def get(key)
-        @cache[key.to_s] ||= Entity.wrap(@attrs[key.to_s], client: @client, top: @top)
+        cache[key.to_s] ||= (
+          value = @attrs[key.to_s]
+          case value
+          when Hash
+            PropertySet.new(value)
+          when Array
+            value.map { |e| PropertySet.new(e) }
+          else
+            value
+          end
+        )
+      end
+
+      private
+
+      def cache
+        @cache ||= {}
+      end
+
+      def method_missing(name, *args, &block)
+        if has?(name)
+          get(name)
+        else
+          super
+        end
       end
 
       # def all
@@ -160,11 +181,20 @@ module BooticClient
       def stringify_keys(hash)
         hash.inject({}) { |memo,(k,v)| memo[k.to_s] = v; memo }
       end
+    end
 
+    class EntitySet < PropertySet
+      def initialize(attrs, client, top)
+        super(attrs)
+        @client, @top = client, top
+      end
+
+      def get(key)
+        cache[key.to_s] ||= Entity.wrap(@attrs[key.to_s], client: @client, top: @top)
+      end
     end
 
     class RelationSet < EntitySet
-
       def initialize(attrs, client, top, curies)
         super(attrs, client, top)
         @curies = curies
@@ -177,7 +207,7 @@ module BooticClient
       def get(key)
         return if key.to_s == CURIES_REL
 
-        @cache[key.to_s] ||= begin
+        cache[key.to_s] ||= begin
           key = key.to_s
           obj = @attrs[key]
 
