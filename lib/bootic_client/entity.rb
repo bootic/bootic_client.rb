@@ -27,7 +27,16 @@ module BooticClient
     CURIES_REL = 'curies'.freeze
     SPECIAL_PROP_EXP = /^_.+/.freeze
 
-    attr_reader :curies, :entities
+    def self.wrap(obj, client: nil, top: nil)
+      case obj
+      when Hash
+        new(obj, client, top: top)
+      when Array
+        obj.map { |e| wrap(e, client: client, top: top) }
+      else
+        obj
+      end
+    end
 
     def initialize(attrs, client, top: self)
       @attrs = attrs.kind_of?(Hash) ? attrs : {}
@@ -72,17 +81,6 @@ module BooticClient
 
     def links
       @links ||= attrs.fetch('_links', {})
-    end
-
-    def self.wrap(obj, client: nil, top: nil)
-      case obj
-      when Hash
-        new(obj, client, top: top)
-      when Array
-        obj.map { |e| wrap(e, client: client, top: top) }
-      else
-        obj
-      end
     end
 
     def method_missing(name, *args, &block)
@@ -132,6 +130,10 @@ module BooticClient
     class PropertySet
       def initialize(attrs)
         @attrs = stringify_keys(attrs || {})
+      end
+
+      def to_hash
+        @attrs
       end
 
       def has?(key)
