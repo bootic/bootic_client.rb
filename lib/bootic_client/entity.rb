@@ -159,7 +159,7 @@ module BooticClient
       end
 
       def each(&block)
-        keys.each { |k| yield get(k) }
+        keys.each { |k| yield k, get(k) }
       end
 
       private
