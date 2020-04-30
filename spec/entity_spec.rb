@@ -85,6 +85,14 @@ describe BooticClient::Entity do
       expect(entity.an_object.dig('another_object', 'foo')).to eq('bar')
     end
 
+    it 'allows enumerating over property sets' do
+      expect(entity.an_object.respond_to?(:each_with_object)).to eq(true)
+      values = entity.an_object.map { |val| val }
+      expect(values[0]).to eq("Foobar")
+      expect(values[1]).to eq(22)
+      expect(values[2]).to be_a(BooticClient::Entity::PropertySet)
+    end
+
     it 'has a #properties object' do
       expect(entity.properties[:total_items]).to eql(10)
     end

@@ -128,6 +128,8 @@ module BooticClient
     end
 
     class PropertySet
+      include Enumerable
+
       def initialize(attrs)
         @attrs = stringify_keys(attrs || {})
       end
@@ -154,6 +156,10 @@ module BooticClient
 
       def get(key)
         cache[key.to_s] ||= wrap(@attrs[key.to_s])
+      end
+
+      def each(&block)
+        keys.each { |k| yield get(k) }
       end
 
       private
