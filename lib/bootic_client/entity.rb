@@ -131,43 +131,33 @@ module BooticClient
       entities.has?(:items) && entities.get(:items).is_a?(EntityArray)
     end
 
-    class EntityArray
-      include Enumerable
+    class EntityArray < Array
 
-      attr_reader :size
-
-      def initialize(arr, client, top)
-        @arr, @client, @top = arr, client, top
+      def initialize(items, client, top)
+        super(items)
+        @client, @top = client, top
         @cache = {}
       end
 
-      def length
-        @arr.length
+      def first
+        self[0]
       end
 
-      alias_method :size, :length
-      alias_method :count, :length
-
-      # def first
-      #   get(0)
-      # end
-
       def last
-        get(length-1)
+        self[length-1]
       end
 
       def [](index)
-        get(index)
+        @cache[index] ||= Entity.wrap(super, client: @client, top: @top)
       end
 
       def each(&block)
         return enum_for(:each) unless block_given?
-
-        length.times { |i| yield get(i) }
+        length.times { |i| yield self[i] }
       end
 
       def get(index)
-        @cache[index] ||= Entity.wrap(@arr[index], client: @client, top: @top)
+        self[index]
       end
     end
 

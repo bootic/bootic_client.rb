@@ -215,8 +215,13 @@ describe BooticClient::Entity do
       it 'is an enumerable if it contains embedded items' do
         prods = []
         entity.each { |pr| prods << pr }
-        expect(prods).to match_array(entity.items)
-        expect(entity.map{|pr| pr}).to match_array(entity.items)
+        expect(prods[0]).to eq(entity.items[0])
+        expect(prods[1]).to eq(entity.items[1])
+
+        mapped = entity.map{|pr| pr}
+        expect(mapped[0]).to eq(entity.items[0])
+        expect(mapped[1]).to eq(entity.items[1])
+
         expect(entity.reduce(0){|sum,e| sum + e.price.to_i}).to eql(24687)
         expect(entity.each).to be_kind_of(Enumerator)
       end
