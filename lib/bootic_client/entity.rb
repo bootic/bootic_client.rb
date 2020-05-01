@@ -131,33 +131,41 @@ module BooticClient
       entities.has?(:items) && entities.get(:items).is_a?(EntityArray)
     end
 
-    class EntityArray < Array
+    class EntityArray
+      include Enumerable
+      extend Forwardable
 
       def initialize(items, client, top)
-        super(items)
+        @items = items
         @client, @top = client, top
         @cache = {}
       end
 
-      def first
-        self[0]
+      def_instance_delegators :@items, :count, :size, :length, :empty?, :any?
+
+      def inspect
+        %(#<#{self.class.name} length: #{length}]>)
       end
+
+      # def first
+      #   self[0]
+      # end
 
       def last
         self[length-1]
       end
 
       def [](index)
-        @cache[index] ||= Entity.wrap(super, client: @client, top: @top)
+        @cache[index] ||= Entity.wrap(@items[index], client: @client, top: @top)
+      end
+
+      def get(index)
+        self[index]
       end
 
       def each(&block)
         return enum_for(:each) unless block_given?
         length.times { |i| yield self[i] }
-      end
-
-      def get(index)
-        self[index]
       end
     end
 
@@ -167,6 +175,18 @@ module BooticClient
       def initialize(attrs)
         @attrs = stringify_keys(attrs || {})
         @cache = {}
+      end
+
+      def keys
+        @keys ||= @attrs.keys
+      end
+
+      def has?(key)
+        @attrs.has_key?(key.to_s)
+      end
+
+      def inspect
+        %(#<#{self.class.name} properties: [#{keys.join(', ')}]>)
       end
 
       def to_hash
@@ -179,14 +199,6 @@ module BooticClient
 
       def dig(*keys)
         @attrs.dig(*keys)
-      end
-
-      def has?(key)
-        @attrs.has_key?(key.to_s)
-      end
-
-      def keys
-        @keys ||= @attrs.keys
       end
 
       def [](key)
@@ -239,6 +251,10 @@ module BooticClient
         @client, @top = client, top
       end
 
+      def inspect
+        %(#<#{self.class.name} entities: [#{keys.join(', ')}]>)
+      end
+
       def get(key)
         @cache[key.to_s] ||= Entity.wrap(@attrs[key.to_s], client: @client, top: @top)
       end
@@ -248,6 +264,10 @@ module BooticClient
       def initialize(attrs, client, top, curies)
         super(attrs, client, top)
         @curies = curies
+      end
+
+      def inspect
+        %(#<#{self.class.name} rels: [#{keys.join(', ')}]>)
       end
 
       def has?(key)
