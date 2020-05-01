@@ -68,20 +68,24 @@ module BooticClient
     end
 
     def inspect
-      %(#<#{self.class.name} props: [#{properties.keys.join(', ')}] rels: [#{rels.keys.join(', ')}] entities: [#{entities.keys.join(', ')}]>)
+      %(#<#{self.class.name} properties: [#{properties.keys.join(', ')}] relations: [#{rels.keys.join(', ')}] entities: [#{entities.keys.join(', ')}]>)
     end
 
     def properties
       @properties ||= PropertySet.new(attrs.select { |k,v| !(k =~ SPECIAL_PROP_EXP) })
     end
 
+    alias_method :props, :properties
+
     def entities
       @entities ||= EntitySet.new(attrs.fetch('_embedded', {}), client, top)
     end
 
-    def rels
-      @rels ||= RelationSet.new(attrs.fetch('_links', {}), client, top, curies)
+    def relations
+      @relations ||= RelationSet.new(attrs.fetch('_links', {}), client, top, curies)
     end
+
+    alias_method :rels, :relations
 
     def links
       @links ||= attrs.fetch('_links', {})
