@@ -5,7 +5,7 @@ module BooticClient
     include Enumerable
 
     def each(&block)
-      entities.get(:items).each &block
+      entities.get(:items).each(&block)
     end
 
     def full_set
@@ -32,7 +32,7 @@ module BooticClient
       when Hash
         new(obj, client, top: top)
       when Array
-        obj.map { |e| wrap(e, client: client, top: top) }
+        EntityArray.new(obj, client, top)
       else
         obj
       end
@@ -128,7 +128,47 @@ module BooticClient
     end
 
     def iterable?
-      entities.has?(:items) && entities.get(:items).respond_to?(:each)
+      entities.has?(:items) && entities.get(:items).is_a?(EntityArray)
+    end
+
+    class EntityArray
+      include Enumerable
+
+      attr_reader :size
+
+      def initialize(arr, client, top)
+        @arr, @client, @top = arr, client, top
+        @cache = {}
+      end
+
+      def length
+        @arr.length
+      end
+
+      alias_method :size, :length
+      alias_method :count, :length
+
+      # def first
+      #   get(0)
+      # end
+
+      def last
+        get(length-1)
+      end
+
+      def [](index)
+        get(index)
+      end
+
+      def each(&block)
+        return enum_for(:each) unless block_given?
+
+        length.times { |i| yield get(i) }
+      end
+
+      def get(index)
+        @cache[index] ||= Entity.wrap(@arr[index], client: @client, top: @top)
+      end
     end
 
     class PropertySet
@@ -136,6 +176,7 @@ module BooticClient
 
       def initialize(attrs)
         @attrs = stringify_keys(attrs || {})
+        @cache = {}
       end
 
       def to_hash
@@ -163,7 +204,7 @@ module BooticClient
       end
 
       def get(key)
-        cache[key.to_s] ||= wrap(@attrs[key.to_s])
+        @cache[key.to_s] ||= wrap(@attrs[key.to_s])
       end
 
       def each(&block)
@@ -181,12 +222,6 @@ module BooticClient
         else
           value
         end
-      end
-
-      private
-
-      def cache
-        @cache ||= {}
       end
 
       def method_missing(name, *args, &block)
@@ -215,7 +250,7 @@ module BooticClient
       end
 
       def get(key)
-        cache[key.to_s] ||= Entity.wrap(@attrs[key.to_s], client: @client, top: @top)
+        @cache[key.to_s] ||= Entity.wrap(@attrs[key.to_s], client: @client, top: @top)
       end
     end
 
@@ -232,7 +267,7 @@ module BooticClient
       def get(key)
         return if key.to_s == CURIES_REL
 
-        cache[key.to_s] ||= begin
+        @cache[key.to_s] ||= begin
           key = key.to_s
           obj = @attrs[key]
 

@@ -105,13 +105,13 @@ describe BooticClient::Entity do
 
     it 'responds to #[]' do
       expect(entity[:total_items]).to eql(10)
-      expect(entity[:items]).to be_a(Array)
+      expect(entity[:items]).to be_a(BooticClient::Entity::EntityArray)
       expect(entity[:foobar]).to eql(nil)
     end
 
     it 'responds to #try (same behaviour as [])' do
       expect(entity.try(:total_items)).to eql(10)
-      expect(entity.try(:items)).to be_a(Array)
+      expect(entity.try(:items)).to be_a(BooticClient::Entity::EntityArray)
       expect(entity.try(:foobar)).to eql(nil)
     end
 
@@ -124,12 +124,12 @@ describe BooticClient::Entity do
     describe 'embedded entities' do
 
       it 'has a #entities object' do
-        expect(entity.entities[:items]).to be_a(Array)
+        expect(entity.entities[:items]).to be_a(BooticClient::Entity::EntityArray)
         expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
       end
 
       it 'are exposed like normal attributes' do
-        expect(entity.items).to be_kind_of(Array)
+        expect(entity.items).to be_kind_of(BooticClient::Entity::EntityArray)
         entity.items.first.tap do |product|
           expect(product).to be_kind_of(BooticClient::Entity)
           expect(product.title).to eql('iPhone 4')
@@ -212,18 +212,19 @@ describe BooticClient::Entity do
     end
 
     describe 'iterating' do
-      it 'is an enumerable if it is a list' do
+      it 'is an enumerable if it contains embedded items' do
         prods = []
-        entity.each{|pr| prods << pr}
+        entity.each { |pr| prods << pr }
         expect(prods).to match_array(entity.items)
         expect(entity.map{|pr| pr}).to match_array(entity.items)
         expect(entity.reduce(0){|sum,e| sum + e.price.to_i}).to eql(24687)
         expect(entity.each).to be_kind_of(Enumerator)
       end
 
-      it 'is not treated as an array if not a list' do
+      it 'does not respond to each if no embedded items' do
         ent = BooticClient::Entity.new({'foo' => 'bar'}, client)
         expect(ent).not_to respond_to(:each)
+        # expect { ent.each { |i| } }.to raise_error(NoMethodError)
       end
     end
 
