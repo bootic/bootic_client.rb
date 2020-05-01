@@ -49,7 +49,9 @@ module BooticClient
       @attrs
     end
 
-    alias_method :as_json, :to_hash
+    def as_json(opts = {})
+      to_hash
+    end
 
     def [](key)
       has_property?(key) ? properties.get(key) : entities.get(key)
@@ -140,7 +142,9 @@ module BooticClient
         @attrs
       end
 
-      alias_method :as_json, :to_hash
+      def as_json(opts = {})
+        to_hash
+      end
 
       def dig(*keys)
         @attrs.dig(*keys)
