@@ -1,4 +1,5 @@
-require "bootic_client/relation"
+require 'bootic_client/relation'
+require 'forwardable'
 
 module BooticClient
   module EnumerableEntity
@@ -179,6 +180,11 @@ module BooticClient
       def initialize(attrs)
         @attrs = stringify_keys(attrs || {})
         @cache = {}
+      end
+
+      # overwrite Enumerable#count because some Entities have this prop
+      def count
+        get('count') or raise NoMethodError, "undefined method `count` for #{self.inspect}"
       end
 
       def keys
