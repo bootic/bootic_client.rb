@@ -1,9 +1,9 @@
 require 'logger'
-require "bootic_client/version"
-require "bootic_client/entity"
-require "bootic_client/relation"
-require "bootic_client/client"
-require "bootic_client/configuration"
+require_relative './bootic_client/version'
+require_relative './bootic_client/entity'
+require_relative './bootic_client/relation'
+require_relative './bootic_client/client'
+require_relative './bootic_client/configuration'
 
 module BooticClient
   class << self
