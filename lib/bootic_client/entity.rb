@@ -146,7 +146,7 @@ module BooticClient
         @cache = {}
       end
 
-      def_instance_delegators :@items, :count, :size, :length, :empty?, :any?
+      def_instance_delegators :@items, :count, :size, :length, :empty?
 
       def inspect
         %(#<#{self.class.name} length: #{length}]>)

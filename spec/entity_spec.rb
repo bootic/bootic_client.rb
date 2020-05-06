@@ -128,8 +128,19 @@ describe BooticClient::Entity do
         expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
       end
 
+      it '#items is a enumerable object' do
+        items = entity.entities[:items]
+        expect(items).to be_a(Enumerable)
+        expect(items.any?).to eq(true)
+
+        res = items.any? do |item|
+          expect(item).to be_a(BooticClient::Entity)
+          item.title == 'iPhone 4'
+        end
+        expect(res).to be(true)
+      end
+
       it 'are exposed like normal attributes' do
-        expect(entity.items).to be_kind_of(BooticClient::Entity::EntityArray)
         entity.items.first.tap do |product|
           expect(product).to be_kind_of(BooticClient::Entity)
           expect(product.title).to eql('iPhone 4')
