@@ -159,9 +159,17 @@ describe BooticClient::Entity do
         end
       end
 
-      it 'includes FALSE values' do
+      it 'includes FALSE values, and allows querying with ?' do
         expect(entity.items.first.published).to be false
+        expect(entity.items.first.published?).to be false
+
         expect(entity.items.last.published).to be true
+        expect(entity.items.last.published?).to be true
+
+        expect(entity.items.first.has?(:published?)).to be true
+        expect(entity.items.first.has?(:published)).to be true
+        expect(entity.items.last.has?(:published)).to be true
+        expect(entity.items.last.has?(:published?)).to be true
       end
     end #/ embedded entities
 

@@ -65,7 +65,7 @@ module BooticClient
     end
 
     def can?(rel_name)
-      has_rel? rel_name
+      has_rel?(rel_name)
     end
 
     def inspect
@@ -192,7 +192,7 @@ module BooticClient
       end
 
       def has?(key)
-        @attrs.has_key?(key.to_s)
+        q = has_key?(key.to_s) || !!has_boolean?(key.to_s)
       end
 
       def inspect
@@ -216,6 +216,10 @@ module BooticClient
       end
 
       def get(key)
+        if !has_key?(key.to_s) && found = has_boolean?(key.to_s)
+          key = found
+        end
+
         @cache[key.to_s] ||= wrap(@attrs[key.to_s])
       end
 
@@ -237,18 +241,30 @@ module BooticClient
       end
 
       def method_missing(name, *args, &block)
-        if has?(name)
+        if has?(name.to_s)
           get(name)
         else
           super
         end
       end
 
+      def has_key?(key)
+        @attrs.has_key?(key)
+      end
+
+      def has_boolean?(key)
+        if key[key.size-1] == '?' and key = key.chomp('?')
+          return key if is_boolean?(key)
+        end
+      end
+
+      def is_boolean?(key)
+        @attrs[key].is_a?(TrueClass) || @attrs[key].is_a?(FalseClass)
+      end
+
       # def all
       #   keys.map { |k| get(key) }
       # end
-
-      private
 
       def stringify_keys(hash)
         hash.inject({}) { |memo,(k,v)| memo[k.to_s] = v; memo }
@@ -277,7 +293,7 @@ module BooticClient
       end
 
       def inspect
-        %(#<#{self.class.name} rels: [#{keys.join(', ')}]>)
+        %(#<#{self.class.name} relations: [#{keys.join(', ')}]>)
       end
 
       def has?(key)
