@@ -79,9 +79,16 @@ module BooticClient
 
     private
 
+    DEFAULT_TIMEOUT = 20.freeze # seconds
+
     def conn(&block)
-      @conn ||= Faraday.new do |f|
-        cache_options = {serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store]}
+      request_opts = {
+        timeout: options[:timeout] || DEFAULT_TIMEOUT, # both read/open timeout
+        open_timeout: options[:open_timeout] || DEFAULT_TIMEOUT # only open timeout
+      }
+
+      @conn ||= Faraday.new(request: request_opts) do |f|
+        cache_options = { serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store] }
         cache_options[:logger] = options[:logger] if options[:logging]
 
         f.use :http_cache, cache_options
