@@ -38,8 +38,6 @@ module BooticClient
 
       attr_reader :config, :on_new_token
 
-      MAX_RETRIES = 3
-
       def validate!
         # Overwrite in sub classes
         # to raise ArgumentErrors on
@@ -66,17 +64,7 @@ module BooticClient
       #   end
       #
       def retryable(&block)
-        begin
-          retries ||= 0
-          yield
-        rescue Faraday::ConnectionFailed => e
-          if (retries += 1) < MAX_RETRIES
-            # puts "Retrying request, attempt #{retries}"
-            retry
-          else
-            raise
-          end
-        end
+        yield
       end
 
       # Noop. Merge these headers into every request.
