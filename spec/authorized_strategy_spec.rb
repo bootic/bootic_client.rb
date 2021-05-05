@@ -23,7 +23,7 @@ describe 'BooticClient::Strategies::Authorized' do
       to_return(status: status, :headers => response_headers, :body => JSON.dump(body))
   end
 
-  def stub_auth(expired_token, status, body, client_id: '', client_secret: '', scope: '')
+  def stub_auth(expired_token, status, body = {})
     now = Time.now
     allow(Time).to receive(:now).and_return now
 
@@ -31,10 +31,10 @@ describe 'BooticClient::Strategies::Authorized' do
       with(body: {
         "assertion" => jwt_assertion(expired_token, now),
         "assertion_type" => "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "client_id" => client_id,
-        "client_secret" => client_secret,
+        "client_id" => '',
+        "client_secret" => '',
         "grant_type" => "assertion",
-        "scope"=>scope
+        "scope" => ''
       },
       headers: {
         'Content-Type'=>'application/x-www-form-urlencoded'
@@ -114,6 +114,7 @@ describe 'BooticClient::Strategies::Authorized' do
         root = client.root
         expect(@failed_root_request).to have_been_requested
         expect(@auth_request).to have_been_requested
+        expect(@successful_root_request).to have_been_requested
         expect(root.message).to eql('Hello!')
       end
 
