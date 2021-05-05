@@ -31,7 +31,7 @@ describe 'BooticClient::Strategies::Authorized' do
       with(body: {
         "assertion" => jwt_assertion(expired_token, now),
         "assertion_type" => "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "client_id" => '',
+        "client_id" => '', # JWT assertion flow does not need client_id or secret, but library sends them empty
         "client_secret" => '',
         "grant_type" => "assertion",
         "scope" => ''
