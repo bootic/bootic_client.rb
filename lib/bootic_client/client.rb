@@ -86,7 +86,7 @@ module BooticClient
         cache_options = {serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
-        f.use :http_cache, cache_options
+        f.use :http_cache, **cache_options
         f.response :logger, options[:logger] if options[:logging]
         yield f if block_given?
         f.adapter *Array(options[:faraday_adapter])
