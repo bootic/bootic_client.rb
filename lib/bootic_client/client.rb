@@ -4,7 +4,7 @@ require 'base64'
 require 'faraday'
 require 'faraday-http-cache'
 require "bootic_client/errors"
-require 'faraday/adapter/net_http_persistent'
+require 'faraday/net_http_persistent'
 
 module BooticClient
 

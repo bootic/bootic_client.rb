@@ -19,7 +19,7 @@ module BooticClient
 
       def client
         @client ||= Client.new(options) do |c|
-          c.request :basic_auth, options[:username], options[:password]
+          c.request :authorization, :basic, options[:username], options[:password]
         end
       end
     end
