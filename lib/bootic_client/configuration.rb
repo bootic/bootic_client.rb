@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bootic_client/response_handlers'
 
 module BooticClient

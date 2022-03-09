@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bootic_client/whiny_uri"
 require "bootic_client/entity"
 require 'ostruct'
