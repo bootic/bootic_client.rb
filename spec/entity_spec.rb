@@ -83,6 +83,8 @@ describe BooticClient::Entity do
       expect(entity.an_object.another_object.foo).to eq 'bar'
 
       expect(entity.an_object.dig('another_object', 'foo')).to eq('bar')
+      expect(entity.an_object.to_hash).to eq({"name"=>"Foobar", "age"=>22, "another_object"=>{"foo"=>"bar"}})
+      expect(entity.an_object.to_h).to eq({"name"=>"Foobar", "age"=>22, "another_object"=>{"foo"=>"bar"}})
     end
 
     it 'allows enumerating over property sets' do
@@ -123,6 +125,13 @@ describe BooticClient::Entity do
 
     describe 'embedded entities' do
 
+      it 'is a EntitySet' do
+        expect(entity.entities).to be_a(BooticClient::Entity::EntitySet)
+        expect(entity.entities.to_hash).to eq({
+          "items"=> [{"title"=>"iPhone 4", "price"=>12345, "published"=>false, "_links"=>{"self"=>{:href=>"/products/iphone4"}, "btc:delete_product"=>{"href"=>"/products/12345"}}, "_embedded"=>{"shop"=>{"name"=>"Acme"}}}, {"title"=>"iPhone 5", "price"=>12342, "published"=>true, "_links"=>{"self"=>{:href=>"/products/iphone5"}}, "_embedded"=>{"shop"=>{"name"=>"Apple"}}}]
+        })
+      end
+
       it 'has a #entities object' do
         expect(entity.entities[:items]).to be_a(BooticClient::Entity::EntityArray)
         expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
@@ -131,6 +140,7 @@ describe BooticClient::Entity do
       it '#items is a enumerable object' do
         items = entity.entities[:items]
         expect(items).to be_a(Enumerable)
+        expect(items.to_a).to be_a(Array)
         expect(items.any?).to eq(true)
 
         res = items.any? do |item|
