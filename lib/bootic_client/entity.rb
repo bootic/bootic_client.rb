@@ -52,6 +52,8 @@ module BooticClient
       @attrs
     end
 
+    alias_method :to_h, :to_hash
+
     def as_json(opts = {})
       to_hash
     end
