@@ -222,7 +222,7 @@ module BooticClient
       end
 
       def get(key)
-        if !has_key?(key.to_s) && found = has_boolean?(key.to_s)
+        if !has_key?(key.to_s) and found = has_boolean?(key.to_s)
           key = found
         end
 
