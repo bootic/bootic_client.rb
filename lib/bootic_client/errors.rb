@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BooticClient
   class TransportError < StandardError; end
   class ServerError < TransportError; end

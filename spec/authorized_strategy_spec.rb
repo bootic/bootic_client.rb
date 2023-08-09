@@ -6,6 +6,7 @@ describe 'BooticClient::Strategies::Authorized' do
 
   let(:client_id) {'aaa'}
   let(:client_secret) {'bbb'}
+  let(:response_headers) { {'Content-Type' => 'application/json'} }
 
   def jwt_assertion(expired_token, now)
     JWT.encode({
@@ -19,10 +20,10 @@ describe 'BooticClient::Strategies::Authorized' do
   def stub_api_root(access_token, status, body)
     stub_request(:get, "https://api.bootic.net/v1").
       with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer #{access_token}"}).
-      to_return(status: status, :body => JSON.dump(body))
+      to_return(status: status, :headers => response_headers, :body => JSON.dump(body))
   end
 
-  def stub_auth(expired_token, status, body, client_id: '', client_secret: '', scope: '')
+  def stub_auth(expired_token, status, body = {})
     now = Time.now
     allow(Time).to receive(:now).and_return now
 
@@ -30,10 +31,10 @@ describe 'BooticClient::Strategies::Authorized' do
       with(body: {
         "assertion" => jwt_assertion(expired_token, now),
         "assertion_type" => "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "client_id" => client_id,
-        "client_secret" => client_secret,
+        "client_id" => '', # JWT assertion flow does not need client_id or secret, but library sends them empty
+        "client_secret" => '',
         "grant_type" => "assertion",
-        "scope"=>scope
+        "scope" => ''
       },
       headers: {
         'Content-Type'=>'application/x-www-form-urlencoded'
@@ -113,6 +114,7 @@ describe 'BooticClient::Strategies::Authorized' do
         root = client.root
         expect(@failed_root_request).to have_been_requested
         expect(@auth_request).to have_been_requested
+        expect(@successful_root_request).to have_been_requested
         expect(root.message).to eql('Hello!')
       end
 
@@ -127,12 +129,12 @@ describe 'BooticClient::Strategies::Authorized' do
         stub_api_root('abc', 200, root_data)
         @unauthorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
           with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer abc"}).
-          to_return(status: 401, :body => JSON.dump(message: 'authorized'))
+          to_return(status: 401, headers: response_headers, :body => JSON.dump(message: 'authorized'))
         @auth_request = stub_auth('abc', 200, access_token: 'validtoken')
 
         @authorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
           with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer validtoken"}).
-          to_return(status: 200, :body => JSON.dump(title: 'All shops'))
+          to_return(status: 200, headers: response_headers, :body => JSON.dump(title: 'All shops'))
         @root = client.root
       end
 
@@ -157,7 +159,7 @@ describe 'BooticClient::Strategies::Authorized' do
     describe '#from_url' do
       it 'builds and returns an entity' do
         authorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
-          to_return(status: 200, :body => JSON.dump(title: 'All shops'))
+          to_return(status: 200, headers: response_headers, :body => JSON.dump(title: 'All shops'))
 
         entity = client.from_url('https://api.bootic.net/v1/shops')
         expect(entity).to be_kind_of(BooticClient::Entity)

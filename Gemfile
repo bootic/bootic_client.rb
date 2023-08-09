@@ -5,5 +5,5 @@ gemspec
 
 group :test do
   gem 'byebug' if RUBY_VERSION.to_i >= 2
-  gem 'webmock', '1.22.3'
+  gem 'webmock', '3.5.1'
 end

@@ -28,11 +28,14 @@ You first must create an OAuth2 Application in your Bootic dashboard. Then confi
 
 ```ruby
 BooticClient.configure do |c|
+  # these are required for OAuth2 strategies
   c.client_id = ENV['BOOTIC_CLIENT_ID']
   c.client_secret = ENV['BOOTIC_CLIENT_SECRET']
+  # these are optional
   c.logger = Logger.new(STDOUT)
   c.logging = true
   c.cache_store = Rails.cache
+  c.user_agent = "My App v1"
 end
 ```
 
@@ -213,6 +216,49 @@ asset = product.create_product_asset(
   filename: 'foo.jpg',
   data: MyReader.new # this will base64-encode the file data in the `data` field.
 )
+```
+
+## Non-JSON responses
+
+HTTP responses are resolved by handler callables in `BooticClient::Configuration#response_handlers`.
+
+The default stack is:
+
+* `BooticClient::ResponseHandlers::Hal`: handles `application/json` responses and wraps JSON data in `BooticClient::Entity` instances.
+* `BooticClient::ResponseHandlers::File`: handles `image/*` responses and wraps image data in IO-like objects.
+
+```ruby
+# Fetching product images and saving them to local files:
+product.images.each do |img|
+  io = img.original # HTTP request to image file
+  # now write image data to local file.
+  File.open(io.file_name, 'wb') do |f|
+    f.write io.read
+  end
+end
+```
+
+You can register custom response handlers. The example below parses CSV response data.
+
+```ruby
+require 'csv'
+
+# Response handlers are callable (anything that responds to #call(faraday_response, client)
+# if a handler returns `nil`, the next handler in the stack will be called.
+CSVHandler = Proc.new do |resp, _client|
+  if resp.headers['Content-Type'] =~ /text\/csv/
+    CSV.parse(resp.body, headings: true)
+  end
+end
+
+BooticClient.configure do |c|
+  c.response_handlers.append(CSVHandler)
+end
+
+# Now CSV resources will be returned as parsed CSV data
+client = BooticClient.client(:authorized, access_token: 'abc')
+root = client.root
+csv = root.some_csv_resource # returns parsed CSV object.
 ```
 
 ## Relation docs

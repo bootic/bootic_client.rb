@@ -37,9 +37,7 @@ describe BooticClient::Client do
       def assert_successful_response(response)
         expect(response).to be_kind_of(Faraday::Response)
         expect(response.status).to eql(200)
-        response.body.tap do |b|
-          expect(b['_links']['shops']).to eql({'href' => 'https://api.bootic.net/v1/products'})
-        end
+        expect(response.body).not_to be nil
       end
 
       context 'switching cache key as per Vary header' do
@@ -110,6 +108,27 @@ describe BooticClient::Client do
 
       end
 
+      context 'User-Agent' do
+        it 'sends it' do
+          req = stub_request(:get, root_url)
+            .with(headers: {'User-Agent' => described_class::USER_AGENT})
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+
+          client.get(root_url, {}, request_headers)
+          expect(req).to have_been_requested
+        end
+
+        it 'can be configured' do
+          client = described_class.new(user_agent: 'foobar')
+          req = stub_request(:get, root_url)
+            .with(headers: {'User-Agent' => 'foobar'})
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+
+          client.get(root_url, {}, request_headers)
+          expect(req).to have_been_requested
+        end
+      end
+
       context 'errors' do
         describe '500 Server error' do
           before do
@@ -172,11 +191,11 @@ describe BooticClient::Client do
         before do
           stub_request(:get, root_url)
             .with(query: {foo: 'bar'}, headers: request_headers)
-            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+            .to_return(status: 200, body: 'abc')
         end
 
         it 'GETs response' do
-          expect(client.get(root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
+          expect(client.get(root_url, {foo: 'bar'}, request_headers).body).to eq 'abc'
         end
       end
 
@@ -188,7 +207,7 @@ describe BooticClient::Client do
         end
 
         it 'POSTs request and parses response' do
-          expect(client.post(root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
+          expect(client.post(root_url, {foo: 'bar'}, request_headers).status).to eq 201
         end
       end
 
@@ -202,18 +221,19 @@ describe BooticClient::Client do
             .to_return(status: 201, body: JSON.dump(root_data), headers: response_headers)
         end
 
-        it 'POSTs request with base64-encoded file and parses response' do
-          expect(client.post(root_url, {foo: 'bar', data: file}, request_headers).body['message']).to eql('Hello!')
+        it 'POSTs request with base64-encoded file' do
+          resp = client.post(root_url, {foo: 'bar', data: file}, request_headers)
+          expect(resp.status).to eq 201
         end
 
         it "works with anything that responds to #read" do
           reader = double("reader", read: File.read(fixture_path("file.gif")))
-          expect(client.post(root_url, {foo: 'bar', data: reader}, request_headers).body['message']).to eql('Hello!')
+          expect(client.post(root_url, {foo: 'bar', data: reader}, request_headers).status).to eq 201
         end
 
         it "works with open-uri" do
           reader = open(fixture_path("file.gif"))
-          expect(client.post(root_url, {foo: 'bar', data: reader}, request_headers).body['message']).to eql('Hello!')
+          expect(client.post(root_url, {foo: 'bar', data: reader}, request_headers).status).to eq 201
         end
       end
 
@@ -222,11 +242,13 @@ describe BooticClient::Client do
           before do
             stub_request(verb, root_url)
               .with(body: JSON.dump({foo: 'bar'}), headers: request_headers)
-              .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+              .to_return(status: 200, body: 'abc', headers: response_headers)
           end
 
-          it "#{verb.to_s.upcase}s request and parses response" do
-            expect(client.send(verb, root_url, {foo: 'bar'}, request_headers).body['message']).to eql('Hello!')
+          it "#{verb.to_s.upcase}s request" do
+            resp = client.send(verb, root_url, {foo: 'bar'}, request_headers)
+            expect(resp.status).to eq 200
+            expect(resp.body).to eq 'abc'
           end
         end
 
@@ -237,11 +259,13 @@ describe BooticClient::Client do
           before do
             stub_request(verb, root_url)
               .with(body: JSON.dump({foo: 'bar', data: {name: 'la', file: base64_data}}), headers: request_headers)
-              .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+              .to_return(status: 200, body: 'abc', headers: response_headers)
           end
 
-          it "#{verb.to_s.upcase}s request with base64-encoded file data and parses response" do
-            expect(client.send(verb, root_url, {foo: 'bar', data: {name: 'la', file: file}}, request_headers).body['message']).to eql('Hello!')
+          it "#{verb.to_s.upcase}s request with base64-encoded file data" do
+            resp = client.send(verb, root_url, {foo: 'bar', data: {name: 'la', file: file}}, request_headers)
+            expect(resp.status).to eq 200
+            expect(resp.body).to eq 'abc'
           end
         end
       end

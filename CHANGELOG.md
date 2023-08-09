@@ -1,5 +1,47 @@
 # Change Log
 
+## [Unreleased](https://github.com/bootic/bootic_client.rb/tree/HEAD)
+
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.24...HEAD)
+
+**Merged pull requests:**
+
+- Make HTTP cache serialize binary data \(ex. images\) safely [\#21](https://github.com/bootic/bootic_client.rb/pull/21) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.24](https://github.com/bootic/bootic_client.rb/tree/v0.0.24) (2019-05-07)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.23...v0.0.24)
+
+**Merged pull requests:**
+
+- Update gems, fix HTTP cache [\#20](https://github.com/bootic/bootic_client.rb/pull/20) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.23](https://github.com/bootic/bootic_client.rb/tree/v0.0.23) (2019-05-04)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.22...v0.0.23)
+
+## [v0.0.22](https://github.com/bootic/bootic_client.rb/tree/v0.0.22) (2019-05-04)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.21...v0.0.22)
+
+**Merged pull requests:**
+
+- Custom response handlers [\#18](https://github.com/bootic/bootic_client.rb/pull/18) ([ismasan](https://github.com/ismasan))
+- Wrap all hash properties in Entity.new, even if not in \_embedded group. [\#17](https://github.com/bootic/bootic_client.rb/pull/17) ([ismasan](https://github.com/ismasan))
+- Make configuration an instance [\#16](https://github.com/bootic/bootic_client.rb/pull/16) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.21](https://github.com/bootic/bootic_client.rb/tree/v0.0.21) (2018-08-30)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.20...v0.0.21)
+
+**Merged pull requests:**
+
+- Add :user\_agent option [\#13](https://github.com/bootic/bootic_client.rb/pull/13) ([ismasan](https://github.com/ismasan))
+
+## [v0.0.20](https://github.com/bootic/bootic_client.rb/tree/v0.0.20) (2018-07-05)
+[Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.19...v0.0.20)
+
+**Merged pull requests:**
+
+- Validate config setters [\#15](https://github.com/bootic/bootic_client.rb/pull/15) ([ismasan](https://github.com/ismasan))
+- Whitelist undeclared params [\#12](https://github.com/bootic/bootic_client.rb/pull/12) ([ismasan](https://github.com/ismasan))
+
 ## [v0.0.19](https://github.com/bootic/bootic_client.rb/tree/v0.0.19) (2017-06-01)
 [Full Changelog](https://github.com/bootic/bootic_client.rb/compare/v0.0.18...v0.0.19)
 

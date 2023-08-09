@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'uri_template'
 
 module BooticClient
@@ -35,7 +37,7 @@ module BooticClient
     def path_variables
       @path_variables ||= (
         variables.find_all{ |v|
-          Regexp.new("(\/\{#{v}\})|(\{\/#{v}\})") =~ href
+          !!(href["{#{v}}"]) || !!(href["{/#{v}}"])
         }
       )
     end

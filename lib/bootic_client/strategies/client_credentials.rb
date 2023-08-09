@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'bootic_client/strategies/oauth2_strategy'
 
 module BooticClient
   module Strategies
 
     class ClientCredentials < Oauth2Strategy
-      protected
+      private
 
       def get_token
         opts = {}

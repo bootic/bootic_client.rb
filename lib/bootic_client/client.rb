@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'base64'
 require 'faraday'
-require 'faraday_middleware'
 require 'faraday-http-cache'
 require "bootic_client/errors"
-require 'faraday/adapter/net_http_persistent'
+require 'faraday/net_http_persistent'
 
 module BooticClient
 
@@ -18,6 +19,7 @@ module BooticClient
       @options = {
         logging: false,
         faraday_adapter: [:net_http_persistent],
+        user_agent: USER_AGENT
       }.merge(options.dup)
 
       @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
@@ -59,16 +61,33 @@ module BooticClient
       end
     end
 
-    protected
+    class SafeCacheSerializer
+      PREFIX = '__booticclient__base64__:'.freeze
+      PREFIX_EXP = %r{^#{PREFIX}}.freeze
+
+      def self.dump(data)
+        data[:body] = "#{PREFIX}#{Base64.strict_encode64(data[:body])}" if data[:body].is_a?(String)
+        JSON.dump(data)
+      end
+
+      def self.load(string)
+        data = JSON.load(string)
+        if data['body'] =~ PREFIX_EXP
+          data['body'] = Base64.strict_decode64(data['body'].sub(PREFIX, ''))
+        end
+        data
+      end
+    end
+
+    private
 
     def conn(&block)
       @conn ||= Faraday.new do |f|
-        cache_options = {shared_cache: false, store: options[:cache_store]}
+        cache_options = {serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store]}
         cache_options[:logger] = options[:logger] if options[:logging]
 
-        f.use :http_cache, cache_options
+        f.use :http_cache, **cache_options
         f.response :logger, options[:logger] if options[:logging]
-        f.response :json
         yield f if block_given?
         f.adapter *Array(options[:faraday_adapter])
       end
@@ -76,7 +95,7 @@ module BooticClient
 
     def request_headers
       {
-        'User-Agent' => USER_AGENT,
+        'User-Agent' => options[:user_agent],
         'Accept' => JSON_MIME,
         'Content-Type' => JSON_MIME
       }

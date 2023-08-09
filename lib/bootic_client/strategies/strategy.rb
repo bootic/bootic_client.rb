@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BooticClient
   module Strategies
     class Strategy
@@ -6,25 +8,27 @@ module BooticClient
 
       def initialize(config, client_opts = {}, &on_new_token)
         @config, @options, @on_new_token = config, client_opts, (on_new_token || Proc.new{})
+        raise ArgumentError, 'must include a Configuration object' unless config
         validate!
       end
 
       def root
-        request_and_wrap :get, config.api_root, Entity
+        request_and_wrap :get, config.api_root
       end
 
       def from_hash(hash, wrapper_class = Entity)
         wrapper_class.new hash, self
       end
 
-      def from_url(url, wrapper_class = Entity)
-        request_and_wrap :get, url, wrapper_class
+      def from_url(url)
+        request_and_wrap :get, url
       end
 
-      def request_and_wrap(request_method, href, wrapper_class, payload = {})
+      def request_and_wrap(request_method, href, payload = {})
         pre_flight
         retryable do
-          wrapper_class.new client.send(request_method, href, payload, request_headers).body, self
+          resp = client.send(request_method, href, payload, request_headers)
+          config.response_handlers.resolve(resp, self)
         end
       end
 

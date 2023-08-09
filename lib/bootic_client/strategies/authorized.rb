@@ -1,13 +1,15 @@
+# frozen_string_literal: true
+
 require 'bootic_client/strategies/oauth2_strategy'
 
 module BooticClient
   module Strategies
 
     class Authorized < Oauth2Strategy
-      protected
+      private
 
       def validate!
-        raise ArgumentError, "options MUST include access_token" unless options[:access_token]
+        raise ArgumentError, 'options MUST include access_token' unless options[:access_token]
       end
 
       def get_token

@@ -3,6 +3,7 @@ require 'spec_helper'
 describe 'BooticClient::Strategies::BasicAuth' do
   require 'webmock/rspec'
 
+  let(:response_headers) { {'Content-Type' => 'application/json'} }
   let(:root_data) {
     {
       '_links' => {
@@ -34,8 +35,9 @@ describe 'BooticClient::Strategies::BasicAuth' do
 
   context 'with invalid BasicAuth credentials' do
     let!(:root_request) do
-      stub_request(:get, 'https://foo:bar@api.bootic.net/v1')
-        .to_return(status: 401, body: JSON.dump(root_data))
+      stub_request(:get, 'https://api.bootic.net/v1')
+        .with(basic_auth: ['foo', 'bar'])
+        .to_return(status: 401, headers: response_headers, body: JSON.dump(root_data))
     end
 
     it 'raises an Unauthorized error' do
@@ -46,13 +48,15 @@ describe 'BooticClient::Strategies::BasicAuth' do
 
   context 'with valid BasicAuth credentials' do
     let!(:root_request) do
-      stub_request(:get, 'https://foo:bar@api.bootic.net/v1')
-        .to_return(status: 200, body: JSON.dump(root_data))
+      stub_request(:get, 'https://api.bootic.net/v1')
+        .with(basic_auth: ['foo', 'bar'])
+        .to_return(status: 200, headers: response_headers, body: JSON.dump(root_data))
     end
 
     let!(:product_request) do
-      stub_request(:get, 'https://foo:bar@api.bootic.net/v1/products/1')
-        .to_return(status: 200, body: JSON.dump(product_data))
+      stub_request(:get, 'https://api.bootic.net/v1/products/1')
+        .with(basic_auth: ['foo', 'bar'])
+        .to_return(status: 200, headers: response_headers, body: JSON.dump(product_data))
     end
 
     let!(:root) { client.root }

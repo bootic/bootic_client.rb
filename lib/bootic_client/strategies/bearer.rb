@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bootic_client/strategies/strategy'
 
 module BooticClient
@@ -7,7 +9,7 @@ module BooticClient
       private
 
       def validate!
-        raise ArgumentError, "options MUST include access_token" unless options[:access_token]
+        raise ArgumentError, 'options MUST include access_token' unless options[:access_token]
       end
 
       def request_headers

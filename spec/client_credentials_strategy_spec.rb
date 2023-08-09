@@ -3,6 +3,7 @@ require 'spec_helper'
 describe 'BooticClient::Strategies::ClientCredentials' do
   require 'webmock/rspec'
 
+  let(:response_headers) { {'Content-Type' => 'application/json'} }
   let(:store){ Hash.new }
   let(:root_data) {
     {
@@ -15,7 +16,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
 
   describe 'with missing client credentials' do
     it 'raises error' do
-      BooticClient.client_id = nil
+      allow(BooticClient.configuration).to receive(:client_id).and_return nil
       expect{
         BooticClient.client(:client_credentials, scope: 'admin')
       }.to raise_error(ArgumentError)
@@ -33,7 +34,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
     def stub_api_root(access_token, status, body)
       stub_request(:get, "https://api.bootic.net/v1").
         with(headers: {'Accept'=>'application/json', 'Authorization'=>"Bearer #{access_token}"}).
-        to_return(status: status, body: JSON.dump(body))
+        to_return(status: status, headers: response_headers, body: JSON.dump(body))
     end
 
     before do
