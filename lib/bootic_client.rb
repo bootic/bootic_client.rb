@@ -12,6 +12,7 @@ module BooticClient
     end
 
     def client(strategy_name, client_opts = {}, &on_new_token)
+      return @stubber if @stubber
       opts = client_opts.dup
       opts[:logging] = configuration.logging
       opts[:logger] = configuration.logger if configuration.logging
@@ -21,12 +22,29 @@ module BooticClient
       strategies.fetch(strategy_name.to_sym).new configuration, opts, &on_new_token
     end
 
+    def auth_host
+      @auth_host || AUTH_HOST
+    end
+
     def configure(&block)
       yield configuration
     end
 
     def configuration
       @configuration ||= Configuration.new
+    end
+
+    def stub!
+      require "bootic_client/stubbing"
+      @stubber = Stubbing::StubRoot.new
+    end
+
+    def stub_chain(method_chain, opts = {})
+      @stubber.stub_chain(method_chain, opts)
+    end
+
+    def unstub!
+      @stubber = nil
     end
   end
 end
