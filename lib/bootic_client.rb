@@ -23,6 +23,10 @@ module BooticClient
       strategies.fetch(strategy_name.to_sym).new configuration, opts, &on_new_token
     end
 
+    def auth_host
+      @auth_host || AUTH_HOST
+    end
+
     def configure(&block)
       yield configuration
     end

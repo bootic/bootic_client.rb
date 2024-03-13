@@ -290,6 +290,34 @@ describe BooticClient::Entity do
         titles = results.map(&:title)
         expect(titles).to match_array(['iPhone 4', 'iPhone 5', 'Item 3', 'Item 4'])
       end
+
+      it 'handles errors gracefully' do
+        error_data = {
+          "_embedded" => {
+            'errors' => [
+              { field: 'foo', messages: ['Ugly error'] }
+            ]
+          }
+        }
+
+        error_page = BooticClient::Entity.new(error_data, client)
+        expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return(error_page)
+        expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', {})
+
+        valid = []
+        errors = nil
+        entity.full_set.each do |item, errors|
+          if item
+            valid.push(item)
+          else
+            expect(valid.count).to eq(2)
+            expect(errors.first.to_hash).to eq({ field: 'foo', messages: ['Ugly error']})
+          end
+        end
+
+        titles = valid.map(&:title)
+        expect(titles).to match_array(['iPhone 4', 'iPhone 5'])
+      end
     end
   end
 

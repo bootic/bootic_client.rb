@@ -16,9 +16,14 @@ module BooticClient
 
       Enumerator.new do |yielder|
         loop do
-          page.each { |item| yielder.yield item }
+          page.each { |item| yielder.yield(item) }
           raise StopIteration unless page.has_rel?(:next)
           page = page.next
+
+          if page.has?(:errors) # && page.errors.first.messages.first['cannot be higher'] # reached last page
+            yielder.yield(nil, page.errors) # yield a nil value so caller can stop gracefully
+            raise StopIteration
+          end
         end
       end
     end
