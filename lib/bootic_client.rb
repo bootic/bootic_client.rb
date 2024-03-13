@@ -1,9 +1,9 @@
 require 'logger'
-require "bootic_client/version"
-require "bootic_client/entity"
-require "bootic_client/relation"
-require "bootic_client/client"
-require "bootic_client/configuration"
+require_relative './bootic_client/version'
+require_relative './bootic_client/entity'
+require_relative './bootic_client/relation'
+require_relative './bootic_client/client'
+require_relative './bootic_client/configuration'
 
 module BooticClient
   class << self
@@ -13,6 +13,7 @@ module BooticClient
 
     def client(strategy_name, client_opts = {}, &on_new_token)
       return @stubber if @stubber
+
       opts = client_opts.dup
       opts[:logging] = configuration.logging
       opts[:logger] = configuration.logger if configuration.logging
