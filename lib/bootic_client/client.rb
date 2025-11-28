@@ -108,15 +108,15 @@ module BooticClient
         yield req if block_given?
       end
 
-      raise_if_invalid! resp
+      raise_if_invalid! resp, "#{verb.upcase} #{href}"
       resp
     end
 
-    def raise_if_invalid!(resp)
-      raise ServerError, "Server Error" if resp.status > 499
-      raise NotFoundError, "Not Found" if resp.status == 404
-      raise UnauthorizedError, "Unauthorized request" if resp.status == 401
-      raise AccessForbiddenError, "Access Forbidden" if resp.status == 403
+    def raise_if_invalid!(resp, url = nil)
+      raise ServerError.new("Server Error", url) if resp.status > 499
+      raise NotFoundError.new("Not Found", url) if resp.status == 404
+      raise UnauthorizedError.new("Unauthorized Request", url) if resp.status == 401
+      raise AccessForbiddenError.new("Access Forbidden", url) if resp.status == 403
     end
 
     def sanitized(payload)

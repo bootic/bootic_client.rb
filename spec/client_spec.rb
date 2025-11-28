@@ -140,6 +140,12 @@ describe BooticClient::Client do
             expect{
               client.get(root_url)
             }.to raise_error(BooticClient::ServerError)
+
+            begin
+              client.get(root_url)
+            rescue BooticClient::ServerError => e
+              expect(e.url).to eq("GET #{root_url}")
+            end
           end
         end
 
@@ -153,6 +159,12 @@ describe BooticClient::Client do
             expect{
               client.get(root_url)
             }.to raise_error(BooticClient::NotFoundError)
+
+            begin
+              client.get(root_url)
+            rescue BooticClient::NotFoundError => e
+              expect(e.url).to eq("GET #{root_url}")
+            end
           end
         end
 
@@ -166,6 +178,12 @@ describe BooticClient::Client do
             expect{
               client.get(root_url)
             }.to raise_error(BooticClient::UnauthorizedError)
+
+            begin
+              client.get(root_url)
+            rescue BooticClient::UnauthorizedError => e
+              expect(e.url).to eq("GET #{root_url}")
+            end
           end
         end
 
@@ -179,6 +197,12 @@ describe BooticClient::Client do
             expect{
               client.get(root_url)
             }.to raise_error(BooticClient::AccessForbiddenError)
+
+            begin
+              client.get(root_url)
+            rescue BooticClient::AccessForbiddenError => e
+              expect(e.url).to eq("GET #{root_url}")
+            end
           end
         end
       end
