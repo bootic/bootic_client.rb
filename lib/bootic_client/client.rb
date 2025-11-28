@@ -108,7 +108,7 @@ module BooticClient
         yield req if block_given?
       end
 
-      raise_if_invalid! resp, "#{verb} #{href}"
+      raise_if_invalid! resp, "#{verb.upcase} #{href}"
       resp
     end
 
