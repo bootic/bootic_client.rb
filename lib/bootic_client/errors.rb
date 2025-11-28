@@ -1,7 +1,14 @@
 # frozen_string_literal: true
 
 module BooticClient
-  class TransportError < StandardError; end
+  class TransportError < StandardError
+    attr_reader :url
+    def initialize(msg = nil, url = nil)
+      super(msg)
+      @url = url
+    end
+  end
+
   class ServerError < TransportError; end
   class NotFoundError < ServerError; end
   class AuthorizationError < ServerError; end
