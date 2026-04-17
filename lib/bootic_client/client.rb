@@ -3,15 +3,13 @@
 require 'base64'
 require 'faraday'
 require 'faraday-http-cache'
-require "bootic_client/errors"
+require 'bootic_client/errors'
 require 'faraday/net_http_persistent'
 
 module BooticClient
-
   class Client
-
-    USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
-    JSON_MIME = 'application/json'.freeze
+    USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}"
+    JSON_MIME = 'application/json'
 
     attr_reader :options
 
@@ -24,7 +22,7 @@ module BooticClient
 
       @options[:cache_store] ||= BoundedMemoryStore.new
 
-      conn &block if block_given?
+      conn(&block) if block_given?
     end
 
     def get(href, query = {}, headers = {})
@@ -75,18 +73,27 @@ module BooticClient
         @max_size = max_size
       end
 
-      def read(key) = @store[key]
+      def read(key)
+        @store[key]
+      end
+
       def write(key, value)
         @store.delete(@store.keys.first) if !@store.key?(key) && @store.size >= @max_size
         @store[key] = value
       end
-      def delete(key) = @store.delete(key)
-      def exist?(key) = @store.key?(key)
+
+      def delete(key)
+        @store.delete(key)
+      end
+
+      def exist?(key)
+        @store.key?(key)
+      end
     end
 
     class SafeCacheSerializer
-      PREFIX = '__booticclient__base64__:'.freeze
-      PREFIX_EXP = %r{^#{PREFIX}}.freeze
+      PREFIX = '__booticclient__base64__:'
+      PREFIX_EXP = /^#{PREFIX}/.freeze
 
       def self.dump(data)
         data[:body] = "#{PREFIX}#{Base64.strict_encode64(data[:body])}" if data[:body].is_a?(String)
@@ -95,18 +102,16 @@ module BooticClient
 
       def self.load(string)
         data = JSON.load(string)
-        if data['body'] =~ PREFIX_EXP
-          data['body'] = Base64.strict_decode64(data['body'].sub(PREFIX, ''))
-        end
+        data['body'] = Base64.strict_decode64(data['body'].sub(PREFIX, '')) if data['body'] =~ PREFIX_EXP
         data
       end
     end
 
     private
 
-    def conn(&block)
+    def conn
       @conn ||= Faraday.new do |f|
-        cache_options = {serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store]}
+        cache_options = { serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store] }
         cache_options[:logger] = options[:logger] if options[:logging]
 
         f.use :http_cache, **cache_options
@@ -114,7 +119,7 @@ module BooticClient
         f.options.timeout = options[:timeout] if options[:timeout]
         f.options.open_timeout = options[:open_timeout] if options[:open_timeout]
         yield f if block_given?
-        f.adapter *Array(options[:faraday_adapter])
+        f.adapter(*Array(options[:faraday_adapter]))
       end
     end
 
@@ -126,7 +131,7 @@ module BooticClient
       }
     end
 
-    def validated_request!(verb, href, &block)
+    def validated_request!(verb, href)
       resp = conn.send(verb) do |req|
         req.url href
         req.headers.update request_headers
@@ -138,25 +143,25 @@ module BooticClient
     end
 
     def raise_if_invalid!(resp, url = nil)
-      raise ServerError.new("Server Error", url) if resp.status > 499
-      raise TooManyRequestsError.new("Too Many Requests", url) if resp.status == 429
-      raise NotFoundError.new("Not Found", url) if resp.status == 404
-      raise UnauthorizedError.new("Unauthorized Request", url) if resp.status == 401
-      raise AccessForbiddenError.new("Access Forbidden", url) if resp.status == 403
+      raise ServerError.new('Server Error', url) if resp.status > 499
+      raise TooManyRequestsError.new('Too Many Requests', url) if resp.status == 429
+      raise NotFoundError.new('Not Found', url) if resp.status == 404
+      raise UnauthorizedError.new('Unauthorized Request', url) if resp.status == 401
+      raise AccessForbiddenError.new('Access Forbidden', url) if resp.status == 403
     end
 
     def sanitized(payload)
-      return payload unless payload.kind_of?(Hash)
+      return payload unless payload.is_a?(Hash)
+
       payload.each_with_object({}) do |(k, v), memo|
-        memo[k] = if v.kind_of?(Hash)
-          sanitized v
-        elsif v.respond_to?(:read)
-          Base64.encode64 v.read
-        else
-          v
-        end
+        memo[k] = if v.is_a?(Hash)
+                    sanitized v
+                  elsif v.respond_to?(:read)
+                    Base64.encode64 v.read
+                  else
+                    v
+                  end
       end
     end
   end
-
 end

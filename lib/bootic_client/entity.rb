@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require "bootic_client/relation"
-require "weakref"
+require 'bootic_client/relation'
+require 'weakref'
 
 module BooticClient
   module EnumerableEntity
     include Enumerable
 
     def each(&block)
-      self[:items].each &block
+      self[:items].each(&block)
     end
 
     def full_set
@@ -18,6 +18,7 @@ module BooticClient
         loop do
           page.each { |item| yielder.yield(item) }
           raise StopIteration unless page.has_rel?(:next)
+
           page = page.next
 
           if page.has?(:errors) # && page.errors.first.messages.first['cannot be higher'] # reached last page
@@ -30,19 +31,18 @@ module BooticClient
   end
 
   class Entity
-
     CURIE_EXP = /(.+):(.+)/.freeze
-    CURIES_REL = 'curies'.freeze
+    CURIES_REL = 'curies'
     SPECIAL_PROP_EXP = /^_.+/.freeze
 
     attr_reader :curies, :entities
 
     def initialize(attrs, client, top: self)
-      @attrs = attrs.kind_of?(Hash) ? attrs : {}
+      @attrs = attrs.is_a?(Hash) ? attrs : {}
       @client = client ? WeakRef.new(client) : nil
       @top = top
       build!
-      self.extend EnumerableEntity if iterable?
+      extend EnumerableEntity if iterable?
     end
 
     def to_hash
@@ -67,7 +67,7 @@ module BooticClient
     end
 
     def properties
-      @properties ||= attrs.select{|k,v| !(k =~ SPECIAL_PROP_EXP)}.each_with_object({}) do |(k,v),memo|
+      @properties ||= attrs.select { |k, _v| !(k =~ SPECIAL_PROP_EXP) }.each_with_object({}) do |(k, v), memo|
         memo[k.to_sym] = Entity.wrap(v, client: client, top: top)
       end
     end
@@ -81,7 +81,7 @@ module BooticClient
       when Hash
         new(obj, client, top: top)
       when Array
-        obj.map{|e| wrap(e, client: client, top: top)}
+        obj.map { |e| wrap(e, client: client, top: top) }
       else
         obj
       end
@@ -103,7 +103,7 @@ module BooticClient
       end
     end
 
-    def respond_to_missing?(method_name, include_private = false)
+    def respond_to_missing?(method_name, _include_private = false)
       has?(method_name)
     end
 
@@ -120,12 +120,12 @@ module BooticClient
     end
 
     def rels
-      @rels ||= (
+      @rels ||= begin
         links = attrs.fetch('_links', {})
-        links.each_with_object({}) do |(rel,rel_attrs),memo|
+        links.each_with_object({}) do |(rel, rel_attrs), memo|
           if rel =~ CURIE_EXP
             _, curie_namespace, rel = rel.split(CURIE_EXP)
-            if curie = curies.find{|c| c['name'] == curie_namespace}
+            if curie = curies.find { |c| c['name'] == curie_namespace }
               rel_attrs['docs'] = Relation.expand(curie['href'], rel: rel)
             end
           end
@@ -134,7 +134,7 @@ module BooticClient
             memo[rel.to_sym] = Relation.new(rel_attrs, client)
           end
         end
-      )
+      end
     end
 
     private
@@ -143,10 +143,11 @@ module BooticClient
 
     def client
       return nil unless @client
+
       @client.__getobj__
     rescue WeakRef::RefError
-      raise "BooticClient: the client for this entity has been garbage collected. " \
-            "Hold a reference to your strategy/client for as long as you need to follow links."
+      raise 'BooticClient: the client for this entity has been garbage collected. ' +
+            'Hold a reference to your strategy/client for as long as you need to follow links.'
     end
 
     def iterable?
@@ -156,12 +157,12 @@ module BooticClient
     def build!
       @curies = top.links.fetch('curies', [])
 
-      @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k,v),memo|
-        memo[k.to_sym] = if v.kind_of?(Array)
-          v.map{|ent_attrs| Entity.new(ent_attrs, client, top: top)}
-        else
-          Entity.new(v, client, top: top)
-        end
+      @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k, v), memo|
+        memo[k.to_sym] = if v.is_a?(Array)
+                           v.map { |ent_attrs| Entity.new(ent_attrs, client, top: top) }
+                         else
+                           Entity.new(v, client, top: top)
+                         end
       end
     end
   end

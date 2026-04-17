@@ -5,9 +5,7 @@ require 'bootic_client/strategies/strategy'
 
 module BooticClient
   module Strategies
-
     class Oauth2Strategy < Strategy
-
       def inspect
         %(#<#{self.class.name} cid: #{config.client_id} root: #{config.api_root} auth: #{config.auth_host}>)
       end
@@ -30,7 +28,7 @@ module BooticClient
         }
       end
 
-      def retryable(&block)
+      def retryable
         yield
       rescue AuthorizationError
         update_token!
@@ -40,11 +38,11 @@ module BooticClient
       def update_token!
         new_token = get_token
         options[:access_token] = new_token
-        on_new_token&.call(new_token)
+        on_new_token.call(new_token) if on_new_token
       end
 
       def get_token
-        raise "Implement this in subclasses"
+        raise 'Implement this in subclasses'
       end
 
       def auth
@@ -54,8 +52,6 @@ module BooticClient
           site: config.auth_host
         )
       end
-
     end
-
   end
 end
