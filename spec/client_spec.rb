@@ -205,8 +205,53 @@ describe BooticClient::Client do
             end
           end
         end
+
+        describe '429 Too Many Requests' do
+          before do
+            stub_request(:get, root_url)
+              .to_return(status: 429, body: JSON.dump(message: 'Rate Limited'), headers: response_headers)
+          end
+
+          it 'raises TooManyRequestsError' do
+            expect {
+              client.get(root_url)
+            }.to raise_error(BooticClient::TooManyRequestsError)
+          end
+
+          it 'carries the request URL on the error' do
+            begin
+              client.get(root_url)
+            rescue BooticClient::TooManyRequestsError => e
+              expect(e.url).to eq("GET #{root_url}")
+            end
+          end
+
+          it 'is not a subclass of ServerError' do
+            expect(BooticClient::TooManyRequestsError.ancestors).not_to include(BooticClient::ServerError)
+          end
+        end
       end
 
+    end
+
+    describe '#close' do
+      before do
+        stub_request(:get, root_url)
+          .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+      end
+
+      it 'resets the Faraday connection so it can be garbage collected' do
+        client.get(root_url)
+        conn_before = client.send(:conn)
+        client.close
+        conn_after = client.send(:conn)
+        expect(conn_before).not_to equal(conn_after)
+      end
+
+      it 'allows making new requests after closing' do
+        client.close
+        expect { client.get(root_url) }.not_to raise_error
+      end
     end
 
     context 'HTTP verbs' do
