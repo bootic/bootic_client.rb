@@ -71,5 +71,23 @@ describe BooticClient::Configuration do
         expect(config.response_handlers.to_a.first).not_to be_nil
       end
     end
+
+    describe '#logger' do
+      it 'returns the same Logger instance on every call when no logger is configured' do
+        expect(config.logger).to equal(config.logger)
+      end
+
+      it 'returns the configured logger when one has been set' do
+        custom = Logger.new(STDOUT)
+        config.logger = custom
+        expect(config.logger).to equal(custom)
+      end
+
+      it 'does not allocate a new Logger on every call' do
+        first_call_id = config.logger.object_id
+        second_call_id = config.logger.object_id
+        expect(first_call_id).to eq(second_call_id)
+      end
+    end
   end
 end
