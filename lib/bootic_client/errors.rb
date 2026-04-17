@@ -14,6 +14,7 @@ module BooticClient
   class AuthorizationError < ServerError; end
   class UnauthorizedError < AuthorizationError; end
   class AccessForbiddenError < AuthorizationError; end
+  class TooManyRequestsError < TransportError; end
   class ClientError < TransportError; end
   class InvalidURLError < ClientError; end
 end

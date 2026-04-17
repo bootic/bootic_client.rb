@@ -22,7 +22,7 @@ module BooticClient
         user_agent: USER_AGENT
       }.merge(options.dup)
 
-      @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
+      @options[:cache_store] ||= BoundedMemoryStore.new
 
       conn &block if block_given?
     end
@@ -61,6 +61,29 @@ module BooticClient
       end
     end
 
+    def close
+      @conn = nil
+    end
+
+    # In-memory cache with a hard upper bound on entries to prevent unbounded growth.
+    # Evicts the oldest entry when the limit is reached.
+    class BoundedMemoryStore
+      DEFAULT_MAX_SIZE = 500
+
+      def initialize(max_size: DEFAULT_MAX_SIZE)
+        @store = {}
+        @max_size = max_size
+      end
+
+      def read(key) = @store[key]
+      def write(key, value)
+        @store.delete(@store.keys.first) if !@store.key?(key) && @store.size >= @max_size
+        @store[key] = value
+      end
+      def delete(key) = @store.delete(key)
+      def exist?(key) = @store.key?(key)
+    end
+
     class SafeCacheSerializer
       PREFIX = '__booticclient__base64__:'.freeze
       PREFIX_EXP = %r{^#{PREFIX}}.freeze
@@ -88,6 +111,8 @@ module BooticClient
 
         f.use :http_cache, **cache_options
         f.response :logger, options[:logger] if options[:logging]
+        f.options.timeout = options[:timeout] if options[:timeout]
+        f.options.open_timeout = options[:open_timeout] if options[:open_timeout]
         yield f if block_given?
         f.adapter *Array(options[:faraday_adapter])
       end
@@ -114,6 +139,7 @@ module BooticClient
 
     def raise_if_invalid!(resp, url = nil)
       raise ServerError.new("Server Error", url) if resp.status > 499
+      raise TooManyRequestsError.new("Too Many Requests", url) if resp.status == 429
       raise NotFoundError.new("Not Found", url) if resp.status == 404
       raise UnauthorizedError.new("Unauthorized Request", url) if resp.status == 401
       raise AccessForbiddenError.new("Access Forbidden", url) if resp.status == 403

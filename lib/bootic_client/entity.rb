@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "bootic_client/relation"
+require "weakref"
 
 module BooticClient
   module EnumerableEntity
@@ -38,7 +39,8 @@ module BooticClient
 
     def initialize(attrs, client, top: self)
       @attrs = attrs.kind_of?(Hash) ? attrs : {}
-      @client, @top = client, top
+      @client = client ? WeakRef.new(client) : nil
+      @top = top
       build!
       self.extend EnumerableEntity if iterable?
     end
@@ -137,7 +139,15 @@ module BooticClient
 
     private
 
-    attr_reader :client, :top, :attrs
+    attr_reader :top, :attrs
+
+    def client
+      return nil unless @client
+      @client.__getobj__
+    rescue WeakRef::RefError
+      raise "BooticClient: the client for this entity has been garbage collected. " \
+            "Hold a reference to your strategy/client for as long as you need to follow links."
+    end
 
     def iterable?
       has_entity?(:items) && entities[:items].respond_to?(:each)
