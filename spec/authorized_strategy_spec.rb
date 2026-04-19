@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'jwt'
 
-describe 'BooticClient::Strategies::Authorized' do
+describe 'Hyperlinked::Strategies::Authorized' do
   require 'webmock/rspec'
 
   let(:client_id) {'aaa'}
@@ -18,7 +18,7 @@ describe 'BooticClient::Strategies::Authorized' do
   end
 
   def stub_api_root(access_token, status, body)
-    stub_request(:get, "https://api.bootic.net/v1").
+    stub_request(:get, "https://api.example.com/v1").
       with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer #{access_token}"}).
       to_return(status: status, :headers => response_headers, :body => JSON.dump(body))
   end
@@ -27,7 +27,7 @@ describe 'BooticClient::Strategies::Authorized' do
     now = Time.now
     allow(Time).to receive(:now).and_return now
 
-    stub_request(:post, "https://auth.bootic.net/oauth/token").
+    stub_request(:post, "https://auth.example.com/oauth/token").
       with(body: {
         "assertion" => jwt_assertion(expired_token, now),
         "assertion_type" => "urn:ietf:params:oauth:grant-type:jwt-bearer",
@@ -46,7 +46,7 @@ describe 'BooticClient::Strategies::Authorized' do
   let(:root_data) {
     {
       '_links' => {
-        'shops' => {'href' => 'https://api.bootic.net/v1/shops'}
+        'shops' => {'href' => 'https://api.example.com/v1/shops'}
       },
       'message' => "Hello!"
     }
@@ -55,7 +55,7 @@ describe 'BooticClient::Strategies::Authorized' do
   describe 'with missing client credentials' do
     it 'raises error' do
       expect{
-        BooticClient.client(:authorized)
+        Hyperlinked.client(:authorized)
       }.to raise_error(ArgumentError)
     end
   end
@@ -63,7 +63,7 @@ describe 'BooticClient::Strategies::Authorized' do
   describe 'with no access_token' do
     it 'raises error' do
       expect{
-        BooticClient.client(:authorized)
+        Hyperlinked.client(:authorized)
       }.to raise_error(ArgumentError)
     end
   end
@@ -71,22 +71,24 @@ describe 'BooticClient::Strategies::Authorized' do
   describe 'with valid client credentials and access_token' do
 
     let(:client) do
-      BooticClient.client(:authorized, access_token: 'abc') do |new_token|
+      Hyperlinked.client(:authorized, access_token: 'abc') do |new_token|
         store[:access_token] = new_token
       end
     end
 
     before do
-      BooticClient.configure do |c|
+      Hyperlinked.configure do |c|
         c.client_id = client_id
         c.client_secret = client_secret
+        c.api_root = 'https://api.example.com/v1'
+        c.auth_host = 'https://auth.example.com'
       end
     end
 
     context 'without a block' do
       it 'is valid' do
         expect{
-          BooticClient.client(:authorized, access_token: 'abc')
+          Hyperlinked.client(:authorized, access_token: 'abc')
         }.not_to raise_error
       end
     end
@@ -127,12 +129,12 @@ describe 'BooticClient::Strategies::Authorized' do
     context 'expired token, other resources' do
       before do
         stub_api_root('abc', 200, root_data)
-        @unauthorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
+        @unauthorized_request = stub_request(:get, "https://api.example.com/v1/shops").
           with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer abc"}).
           to_return(status: 401, headers: response_headers, :body => JSON.dump(message: 'authorized'))
         @auth_request = stub_auth('abc', 200, access_token: 'validtoken')
 
-        @authorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
+        @authorized_request = stub_request(:get, "https://api.example.com/v1/shops").
           with(headers: {'Accept'=>'application/json', 'Authorization' => "Bearer validtoken"}).
           to_return(status: 200, headers: response_headers, :body => JSON.dump(title: 'All shops'))
         @root = client.root
@@ -150,7 +152,7 @@ describe 'BooticClient::Strategies::Authorized' do
     describe '#from_hash' do
       it 'builds and returns an entity' do
         entity = client.from_hash('name' =>  'foo', '_links' => {'delete' => {'href' => '/foo/bar'}})
-        expect(entity).to be_kind_of(BooticClient::Entity)
+        expect(entity).to be_kind_of(Hyperlinked::Entity)
         expect(entity.name).to eql('foo')
         expect(entity.can?(:delete)).to be true
       end
@@ -158,11 +160,11 @@ describe 'BooticClient::Strategies::Authorized' do
 
     describe '#from_url' do
       it 'builds and returns an entity' do
-        authorized_request = stub_request(:get, "https://api.bootic.net/v1/shops").
+        authorized_request = stub_request(:get, "https://api.example.com/v1/shops").
           to_return(status: 200, headers: response_headers, :body => JSON.dump(title: 'All shops'))
 
-        entity = client.from_url('https://api.bootic.net/v1/shops')
-        expect(entity).to be_kind_of(BooticClient::Entity)
+        entity = client.from_url('https://api.example.com/v1/shops')
+        expect(entity).to be_kind_of(Hyperlinked::Entity)
         expect(entity.title).to eql('All shops')
       end
     end

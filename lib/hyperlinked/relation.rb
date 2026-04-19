@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "bootic_client/whiny_uri"
-require "bootic_client/entity"
+require "hyperlinked/whiny_uri"
+require "hyperlinked/entity"
 require 'ostruct'
 
-module BooticClient
+module Hyperlinked
 
   class Relation
     GET = 'get'.freeze

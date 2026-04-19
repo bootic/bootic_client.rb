@@ -1,7 +1,7 @@
 require 'spec_helper'
-require "bootic_client/whiny_uri"
+require "hyperlinked/whiny_uri"
 
-describe BooticClient::WhinyURI do
+describe Hyperlinked::WhinyURI do
   describe '#expand' do
     let(:uri) {
       described_class.new('http://www.host.com/shops/{id}/{?foo}')
@@ -10,14 +10,14 @@ describe BooticClient::WhinyURI do
     it 'complains if missing a path segment' do
       expect{
         uri.expand(foo: 1)
-      }.to raise_error BooticClient::InvalidURLError
+      }.to raise_error Hyperlinked::InvalidURLError
     end
 
     it 'understand different path segment syntax' do
       uri = described_class.new('http://www.host.com/shops{/id}/{?foo}')
       expect{
         uri.expand(foo: 1)
-      }.to raise_error BooticClient::InvalidURLError
+      }.to raise_error Hyperlinked::InvalidURLError
     end
 
     it 'expands if all path variables provided' do
@@ -28,14 +28,14 @@ describe BooticClient::WhinyURI do
     it 'complains if passing undeclared params' do
       expect{
         uri.expand(id: 123, nope: 'nope')
-      }.to raise_error BooticClient::InvalidURLError
+      }.to raise_error Hyperlinked::InvalidURLError
     end
 
     it 'understand variable lists in query' do
       uri = described_class.new('http://www.host.com/shops{/id}/{?foo,bar}')
       expect{
         uri.expand(id: 123, foo: 'foo', bar: 'bar', nope: 'nope')
-      }.to raise_error BooticClient::InvalidURLError
+      }.to raise_error Hyperlinked::InvalidURLError
     end
 
     it 'expands if passing declared query variables' do

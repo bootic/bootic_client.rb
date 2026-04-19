@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'BooticClient::Strategies::ClientCredentials' do
+describe 'Hyperlinked::Strategies::ClientCredentials' do
   require 'webmock/rspec'
 
   let(:response_headers) { {'Content-Type' => 'application/json'} }
@@ -8,7 +8,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
   let(:root_data) {
     {
       '_links' => {
-        'shops' => {'href' => 'https://api.bootic.net/v1/products'}
+        'items' => {'href' => 'https://api.example.com/v1/items'}
       },
       'message' => "Hello!"
     }
@@ -16,9 +16,9 @@ describe 'BooticClient::Strategies::ClientCredentials' do
 
   describe 'with missing client credentials' do
     it 'raises error' do
-      allow(BooticClient.configuration).to receive(:client_id).and_return nil
+      allow(Hyperlinked.configuration).to receive(:client_id).and_return nil
       expect{
-        BooticClient.client(:client_credentials, scope: 'admin')
+        Hyperlinked.client(:client_credentials, scope: 'admin')
       }.to raise_error(ArgumentError)
     end
   end
@@ -26,27 +26,29 @@ describe 'BooticClient::Strategies::ClientCredentials' do
   describe 'with valid client credentials' do
 
     def stub_auth(status, body)
-      stub_request(:post, "https://auth.bootic.net/oauth/token").
+      stub_request(:post, "https://auth.example.com/oauth/token").
         with(body: {"grant_type"=>"client_credentials", client_id: "aaa", client_secret: "bbb", 'scope' => 'admin'}).
         to_return(status: status, body: JSON.dump(body), headers: {'Content-Type' => 'application/json'})
     end
 
     def stub_api_root(access_token, status, body)
-      stub_request(:get, "https://api.bootic.net/v1").
+      stub_request(:get, "https://api.example.com/v1").
         with(headers: {'Accept'=>'application/json', 'Authorization'=>"Bearer #{access_token}"}).
         to_return(status: status, headers: response_headers, body: JSON.dump(body))
     end
 
     before do
-      BooticClient.configure do |c|
+      Hyperlinked.configure do |c|
         c.client_id = 'aaa'
         c.client_secret = 'bbb'
+        c.api_root = 'https://api.example.com/v1'
+        c.auth_host = 'https://auth.example.com'
       end
     end
 
     context 'with no previous access token' do
       let(:client) do
-        BooticClient.client(:client_credentials, scope: 'admin') do |new_token|
+        Hyperlinked.client(:client_credentials, scope: 'admin') do |new_token|
           store[:access_token] = new_token
         end
       end
@@ -70,7 +72,7 @@ describe 'BooticClient::Strategies::ClientCredentials' do
 
     context 'with an expired access token' do
       let(:client) do
-        BooticClient.client(:client_credentials, scope: 'admin', access_token: 'abc') do |new_token|
+        Hyperlinked.client(:client_credentials, scope: 'admin', access_token: 'abc') do |new_token|
           store[:access_token] = new_token
         end
       end

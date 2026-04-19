@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'json'
 require "open-uri"
 
-describe BooticClient::Client do
+describe Hyperlinked::Client do
   require 'webmock/rspec'
 
   def fixture_path(filename)
@@ -10,8 +10,8 @@ describe BooticClient::Client do
   end
 
   describe 'valid response' do
-    let(:root_url) { 'https://api.bootic.net/v1' }
-    let(:client) { BooticClient::Client.new }
+    let(:root_url) { 'https://api.example.com/v1' }
+    let(:client) { Hyperlinked::Client.new }
     let(:request_headers) {
       {'Authorization' => "Bearer xxx"}
     }
@@ -27,7 +27,7 @@ describe BooticClient::Client do
     let(:root_data) {
       {
         '_links' => {
-          'shops' => {'href' => 'https://api.bootic.net/v1/products'}
+          'items' => {'href' => 'https://api.example.com/v1/items'}
         },
         'message' => "Hello!"
       }
@@ -139,11 +139,11 @@ describe BooticClient::Client do
           it 'raises exception' do
             expect{
               client.get(root_url)
-            }.to raise_error(BooticClient::ServerError)
+            }.to raise_error(Hyperlinked::ServerError)
 
             begin
               client.get(root_url)
-            rescue BooticClient::ServerError => e
+            rescue Hyperlinked::ServerError => e
               expect(e.url).to eq("GET #{root_url}")
             end
           end
@@ -158,11 +158,11 @@ describe BooticClient::Client do
           it 'raises exception' do
             expect{
               client.get(root_url)
-            }.to raise_error(BooticClient::NotFoundError)
+            }.to raise_error(Hyperlinked::NotFoundError)
 
             begin
               client.get(root_url)
-            rescue BooticClient::NotFoundError => e
+            rescue Hyperlinked::NotFoundError => e
               expect(e.url).to eq("GET #{root_url}")
             end
           end
@@ -177,11 +177,11 @@ describe BooticClient::Client do
           it 'raises exception' do
             expect{
               client.get(root_url)
-            }.to raise_error(BooticClient::UnauthorizedError)
+            }.to raise_error(Hyperlinked::UnauthorizedError)
 
             begin
               client.get(root_url)
-            rescue BooticClient::UnauthorizedError => e
+            rescue Hyperlinked::UnauthorizedError => e
               expect(e.url).to eq("GET #{root_url}")
             end
           end
@@ -196,11 +196,11 @@ describe BooticClient::Client do
           it 'raises exception' do
             expect{
               client.get(root_url)
-            }.to raise_error(BooticClient::AccessForbiddenError)
+            }.to raise_error(Hyperlinked::AccessForbiddenError)
 
             begin
               client.get(root_url)
-            rescue BooticClient::AccessForbiddenError => e
+            rescue Hyperlinked::AccessForbiddenError => e
               expect(e.url).to eq("GET #{root_url}")
             end
           end

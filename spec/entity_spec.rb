@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe BooticClient::Entity do
+describe Hyperlinked::Entity do
   let(:client) { double(:client) }
   let(:list_payload) do
     {
@@ -15,12 +15,12 @@ describe BooticClient::Entity do
       '_links' => {
         'self' => {'href' => '/foo'},
         'next' => { 'href' => '/foo?page=2'},
-        'btc:products' => {'href' => '/all/products'},
-        'btc:search' => {'href' => '/search{?q}', 'templated' => true},
+        'hl:products' => {'href' => '/all/products'},
+        'hl:search' => {'href' => '/search{?q}', 'templated' => true},
         'curies' => [
           {
-            'name' => "btc",
-            'href' => "https://developers.bootic.net/rels/{rel}",
+            'name' => "hl",
+            'href' => "https://rels.example.com/{rel}",
             'templated' => true
           }
         ]
@@ -33,7 +33,7 @@ describe BooticClient::Entity do
             'published' => false,
             '_links' => {
               'self' => {href: '/products/iphone4'},
-              'btc:delete_product' => {'href' => '/products/12345'}
+              'hl:delete_product' => {'href' => '/products/12345'}
             },
             '_embedded' => {
               'shop' => {
@@ -62,7 +62,7 @@ describe BooticClient::Entity do
   end
 
   context 'parsing JSON HAL' do
-    let(:entity) { BooticClient::Entity.new(list_payload, client) }
+    let(:entity) { Hyperlinked::Entity.new(list_payload, client) }
 
     it 'knows about plain properties' do
       expect(entity.total_items).to eql(10)
@@ -102,13 +102,13 @@ describe BooticClient::Entity do
 
       it 'has a #entities object' do
         expect(entity.entities[:items]).to be_a(Array)
-        expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
+        expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(Hyperlinked::Entity)
       end
 
       it 'are exposed like normal attributes' do
         expect(entity.items).to be_kind_of(Array)
         entity.items.first.tap do |product|
-          expect(product).to be_kind_of(BooticClient::Entity)
+          expect(product).to be_kind_of(Hyperlinked::Entity)
           expect(product.title).to eql('iPhone 4')
         end
       end
@@ -120,7 +120,7 @@ describe BooticClient::Entity do
       it 'recursively builds embedded entities' do
         product = entity.items.first
         product.shop.tap do |shop|
-          expect(shop).to be_kind_of(BooticClient::Entity)
+          expect(shop).to be_kind_of(Hyperlinked::Entity)
           expect(shop.name).to eql('Acme')
         end
       end
@@ -142,31 +142,31 @@ describe BooticClient::Entity do
       end
 
       it 'builds relation objects' do
-        expect(entity.rels[:next]).to be_kind_of(BooticClient::Relation)
+        expect(entity.rels[:next]).to be_kind_of(Hyperlinked::Relation)
         expect(entity.rels[:next].href).to eql('/foo?page=2')
       end
 
       it 'understands namespaced cURIes' do
-        expect(entity.rels[:products]).to be_kind_of(BooticClient::Relation)
+        expect(entity.rels[:products]).to be_kind_of(Hyperlinked::Relation)
         expect(entity.rels[:products].href).to eql('/all/products')
       end
 
       it 'adds docs if cURIes available' do
-        expect(entity.rels[:products].docs).to eql('https://developers.bootic.net/rels/products')
+        expect(entity.rels[:products].docs).to eql('https://rels.example.com/products')
       end
 
       it 'adds docs if cURIes available even in nested entities' do
         prod = entity.items.first
-        expect(prod.rels[:delete_product].docs).to eql('https://developers.bootic.net/rels/delete_product')
+        expect(prod.rels[:delete_product].docs).to eql('https://rels.example.com/delete_product')
       end
 
       context 'eagerly fetching rels' do
-        let(:next_page) { BooticClient::Entity.new({'page' => 2}, client) }
+        let(:next_page) { Hyperlinked::Entity.new({'page' => 2}, client) }
 
         it 'exposes link target resources as normal properties' do
           expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return next_page
           entity.next.tap do |next_entity|
-            expect(next_entity).to be_kind_of(BooticClient::Entity)
+            expect(next_entity).to be_kind_of(Hyperlinked::Entity)
             expect(next_entity.page).to eql(2)
           end
         end
@@ -174,7 +174,7 @@ describe BooticClient::Entity do
         it 'takes optional URI parameters' do
           expect(client).to receive(:request_and_wrap).with(:get, '/search?q=foo', {}).and_return next_page
           entity.search(q: 'foo').tap do |next_entity|
-            expect(next_entity).to be_kind_of(BooticClient::Entity)
+            expect(next_entity).to be_kind_of(Hyperlinked::Entity)
             expect(next_entity.page).to eql(2)
           end
         end
@@ -182,7 +182,7 @@ describe BooticClient::Entity do
         it 'complains if passing undeclared link params' do
           expect {
             entity.search(foo: 'bar')
-          }.to raise_error(BooticClient::InvalidURLError)
+          }.to raise_error(Hyperlinked::InvalidURLError)
         end
       end
 
@@ -199,7 +199,7 @@ describe BooticClient::Entity do
       end
 
       it 'is not treated as an array if not a list' do
-        ent = BooticClient::Entity.new({'foo' => 'bar'}, client)
+        ent = Hyperlinked::Entity.new({'foo' => 'bar'}, client)
         expect(ent).not_to respond_to(:each)
       end
     end
@@ -223,7 +223,7 @@ describe BooticClient::Entity do
           }
         }
       }
-      let(:page_2) { BooticClient::Entity.new(page_2_data, client) }
+      let(:page_2) { Hyperlinked::Entity.new(page_2_data, client) }
 
       it 'lazily enumerates entries across pages, making as little requests as possible' do
         expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return page_2
@@ -242,7 +242,7 @@ describe BooticClient::Entity do
           }
         }
 
-        error_page = BooticClient::Entity.new(error_data, client)
+        error_page = Hyperlinked::Entity.new(error_data, client)
         expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return(error_page)
         expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', {})
 
@@ -265,12 +265,12 @@ describe BooticClient::Entity do
 
   context 'empty response' do
     it 'does not break if response is nil' do
-      entity = BooticClient::Entity.new(nil, client)
+      entity = Hyperlinked::Entity.new(nil, client)
       expect(entity.links).to eql({})
     end
 
     it 'does not break if response is empty string' do
-      entity = BooticClient::Entity.new('', client)
+      entity = Hyperlinked::Entity.new('', client)
       expect(entity.links).to eql({})
     end
   end

@@ -1,11 +1,11 @@
 require 'logger'
-require "bootic_client/version"
-require "bootic_client/entity"
-require "bootic_client/relation"
-require "bootic_client/client"
-require "bootic_client/configuration"
+require "hyperlinked/version"
+require "hyperlinked/entity"
+require "hyperlinked/relation"
+require "hyperlinked/client"
+require "hyperlinked/configuration"
 
-module BooticClient
+module Hyperlinked
   class << self
     def strategies
       @strategies ||= {}
@@ -18,12 +18,8 @@ module BooticClient
       opts[:logger] = configuration.logger if configuration.logging
       opts[:cache_store] = configuration.cache_store if configuration.cache_store
       opts[:user_agent] = configuration.user_agent if configuration.user_agent
-      require "bootic_client/strategies/#{strategy_name}"
+      require "hyperlinked/strategies/#{strategy_name}"
       strategies.fetch(strategy_name.to_sym).new configuration, opts, &on_new_token
-    end
-
-    def auth_host
-      @auth_host || AUTH_HOST
     end
 
     def configure(&block)
@@ -35,7 +31,7 @@ module BooticClient
     end
 
     def stub!
-      require "bootic_client/stubbing"
+      require "hyperlinked/stubbing"
       @stubber = Stubbing::StubRoot.new
     end
 

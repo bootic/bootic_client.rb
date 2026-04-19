@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'bootic_client/strategies/strategy'
+require 'hyperlinked/strategies/strategy'
 
-describe BooticClient::Strategies::Strategy do
+describe Hyperlinked::Strategies::Strategy do
   require 'webmock/rspec'
 
-  let(:config) { BooticClient::Configuration.new }
+  let(:config) { Hyperlinked::Configuration.new }
   subject(:strategy) { described_class.new(config) }
 
   describe '#request_and_wrap' do
@@ -22,7 +22,7 @@ describe BooticClient::Strategies::Strategy do
 
       it 'returns the raw response' do
         resp = strategy.request_and_wrap(:get, 'https://a.server.com/foo')
-        expect(resp).to be_a(BooticClient::Entity)
+        expect(resp).to be_a(Hyperlinked::Entity)
         expect(resp.name).to eq 'Jason'
       end
     end

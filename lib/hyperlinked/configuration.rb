@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-require 'bootic_client/response_handlers'
+require 'hyperlinked/response_handlers'
 
-module BooticClient
+module Hyperlinked
   InvalidConfigurationError = Class.new(StandardError)
   VERY_BASIC_URL_CHECK = /^(http|https):/.freeze
-
-  AUTH_HOST = 'https://auth.bootic.net'.freeze
-  API_ROOT = 'https://api.bootic.net/v1'.freeze
 
   class Configuration
     attr_accessor :logging
@@ -44,11 +41,11 @@ module BooticClient
     end
 
     def auth_host
-      @auth_host || AUTH_HOST
+      @auth_host
     end
 
     def api_root
-      @api_root || API_ROOT
+      @api_root
     end
 
     def logger

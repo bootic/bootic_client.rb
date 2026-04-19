@@ -2,7 +2,7 @@
 
 require 'json'
 
-module BooticClient
+module Hyperlinked
   module ResponseHandlers
     class Set
       def initialize(handlers = [])

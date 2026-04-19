@@ -2,7 +2,7 @@
 
 require 'uri_template'
 
-module BooticClient
+module Hyperlinked
   class WhinyURI
     attr_reader :variables
 
@@ -82,4 +82,3 @@ module BooticClient
     end
   end
 end
-

@@ -1,16 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'bootic_client/version'
+require 'hyperlinked/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "bootic_client"
-  spec.version       = BooticClient::VERSION
+  spec.name          = "hyperlinked"
+  spec.version       = Hyperlinked::VERSION
   spec.authors       = ["Ismael Celis"]
   spec.email         = ["ismaelct@gmail.com"]
-  spec.description   = %q{Official Ruby client for the Bootic API}
-  spec.summary       = %q{Official Ruby client for the Bootic API}
-  spec.homepage      = "https://developers.bootic.net"
+  spec.description   = %q{A Ruby client for HAL-based hypermedia APIs}
+  spec.summary       = %q{A Ruby client for HAL-based hypermedia APIs}
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

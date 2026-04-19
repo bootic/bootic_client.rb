@@ -1,4 +1,4 @@
-module BooticClient
+module Hyperlinked
   module Stubbing
     MissingStubError = Class.new(StandardError)
 
@@ -105,9 +105,9 @@ module BooticClient
 
       def returns
         if @return_data.is_a?(Array)
-          @return_data.map{|d| BooticClient::Entity.new(d, nil)}
+          @return_data.map{|d| Hyperlinked::Entity.new(d, nil)}
         else
-          BooticClient::Entity.new(@return_data || {}, nil)
+          Hyperlinked::Entity.new(@return_data || {}, nil)
         end
       end
 

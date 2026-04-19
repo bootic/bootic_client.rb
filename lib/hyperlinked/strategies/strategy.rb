@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module BooticClient
+module Hyperlinked
   module Strategies
     class Strategy
 

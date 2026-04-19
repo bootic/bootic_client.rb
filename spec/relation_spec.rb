@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe BooticClient::Relation do
+describe Hyperlinked::Relation do
   let(:client) { double(:client) }
   let(:attributes) {{'href' => '/foo/bars', 'type' => 'application/json', 'title' => 'A relation', 'name' => 'self'}}
-  let(:relation) { BooticClient::Relation.new(attributes, client) }
+  let(:relation) { Hyperlinked::Relation.new(attributes, client) }
 
   describe 'attributes' do
     it 'has readers for known relation attributes' do
@@ -22,7 +22,7 @@ describe BooticClient::Relation do
   end
 
   describe '#run' do
-    let(:entity) { BooticClient::Entity.new({'title' => 'Foobar'}, client) }
+    let(:entity) { Hyperlinked::Entity.new({'title' => 'Foobar'}, client) }
 
     describe 'running GET by default' do
       it 'fetches data and returns entity' do
@@ -31,7 +31,7 @@ describe BooticClient::Relation do
       end
 
       context 'without URI templates' do
-        let(:relation) { BooticClient::Relation.new({'href' => '/foos/bar', 'type' => 'application/json', 'title' => 'A relation'}, client) }
+        let(:relation) { Hyperlinked::Relation.new({'href' => '/foos/bar', 'type' => 'application/json', 'title' => 'A relation'}, client) }
 
         it 'is not templated' do
           expect(relation.templated?).to eql(false)
@@ -48,7 +48,7 @@ describe BooticClient::Relation do
       end
 
       context 'with URI templates' do
-        let(:relation) { BooticClient::Relation.new({'href' => '/foos/{id}{?q,page}', 'type' => 'application/json', 'title' => 'A relation', 'templated' => true}, client) }
+        let(:relation) { Hyperlinked::Relation.new({'href' => '/foos/{id}{?q,page}', 'type' => 'application/json', 'title' => 'A relation', 'templated' => true}, client) }
 
         it 'is templated' do
           expect(relation.templated?).to eql(true)
@@ -57,7 +57,7 @@ describe BooticClient::Relation do
         it 'complains if missing path variables' do
           expect{
             relation.run
-          }.to raise_error BooticClient::InvalidURLError
+          }.to raise_error Hyperlinked::InvalidURLError
         end
 
         it 'works with defaults' do
@@ -77,15 +77,15 @@ describe BooticClient::Relation do
         it 'complains if passing undeclared query variables' do
           expect{
             relation.run(id: 2, q: 'test', page: 2, other: 'foo')
-          }.to raise_error BooticClient::InvalidURLError
+          }.to raise_error Hyperlinked::InvalidURLError
         end
       end
 
       context "configured to not complain on undeclared variables" do
         it "whitelists params but does not complain" do
-          BooticClient::Relation.complain_on_undeclared_params = false
+          Hyperlinked::Relation.complain_on_undeclared_params = false
 
-          relation = BooticClient::Relation.new({
+          relation = Hyperlinked::Relation.new({
             'href' => '/foos/{id}{?q,page}',
             'templated' => true
             },
@@ -96,14 +96,14 @@ describe BooticClient::Relation do
 
           relation.run(id: 2, q: 'test', page: 3, foo: 1)
 
-          BooticClient::Relation.complain_on_undeclared_params = true
+          Hyperlinked::Relation.complain_on_undeclared_params = true
         end
       end
     end
 
     describe 'POST' do
-      let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
-      let(:relation_templated) { BooticClient::Relation.new({'href' => '/foo/{bars}', 'templated' => true, 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
+      let(:relation) { Hyperlinked::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
+      let(:relation_templated) { Hyperlinked::Relation.new({'href' => '/foo/{bars}', 'templated' => true, 'type' => 'application/json', 'name' => 'self', 'method' => 'post'}, client) }
 
       it 'POSTS data and returns resulting entity' do
         allow(client).to receive(:request_and_wrap).with(:post, '/foo/bars', {}).and_return entity
@@ -117,7 +117,7 @@ describe BooticClient::Relation do
     end
 
     describe 'DELETE' do
-      let(:relation) { BooticClient::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'delete'}, client) }
+      let(:relation) { Hyperlinked::Relation.new({'href' => '/foo/bars', 'type' => 'application/json', 'name' => 'self', 'method' => 'delete'}, client) }
 
       it 'DELETEs data and returns resulting entity' do
         allow(client).to receive(:request_and_wrap).with(:delete, '/foo/bars', {}).and_return entity

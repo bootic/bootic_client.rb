@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module BooticClient
+module Hyperlinked
   class TransportError < StandardError
     attr_reader :url
     def initialize(msg = nil, url = nil)

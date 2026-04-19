@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'oauth2'
-require 'bootic_client/strategies/strategy'
+require 'hyperlinked/strategies/strategy'
 
-module BooticClient
+module Hyperlinked
   module Strategies
 
     class Oauth2Strategy < Strategy

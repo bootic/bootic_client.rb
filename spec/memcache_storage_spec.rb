@@ -1,9 +1,9 @@
 require 'spec_helper'
-require 'bootic_client/stores/memcache'
+require 'hyperlinked/stores/memcache'
 
-describe BooticClient::Stores::Memcache do
+describe Hyperlinked::Stores::Memcache do
   let(:dalli) { double('Dalli') }
-  let(:store) { BooticClient::Stores::Memcache.new(['localhost:1112'], foo: 'bar') }
+  let(:store) { Hyperlinked::Stores::Memcache.new(['localhost:1112'], foo: 'bar') }
 
   before do
     allow(Dalli::Client).to receive(:new).with(['localhost:1112'], foo: 'bar').and_return dalli

@@ -1,6 +1,6 @@
 require 'dalli'
 
-module BooticClient
+module Hyperlinked
   module Stores
     class Memcache
       attr_reader :client

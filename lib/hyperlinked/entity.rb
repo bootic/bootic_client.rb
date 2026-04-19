@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "bootic_client/relation"
+require "hyperlinked/relation"
 
-module BooticClient
+module Hyperlinked
   module EnumerableEntity
     include Enumerable
 

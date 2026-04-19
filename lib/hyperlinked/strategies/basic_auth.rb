@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'bootic_client/strategies/strategy'
+require 'hyperlinked/strategies/strategy'
 
-module BooticClient
+module Hyperlinked
   module Strategies
     class BasicAuth < Strategy
 

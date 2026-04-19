@@ -3,14 +3,14 @@
 require 'base64'
 require 'faraday'
 require 'faraday-http-cache'
-require "bootic_client/errors"
+require "hyperlinked/errors"
 require 'faraday/net_http_persistent'
 
-module BooticClient
+module Hyperlinked
 
   class Client
 
-    USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
+    USER_AGENT = "[Hyperlinked v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
     JSON_MIME = 'application/json'.freeze
 
     attr_reader :options
@@ -62,7 +62,7 @@ module BooticClient
     end
 
     class SafeCacheSerializer
-      PREFIX = '__booticclient__base64__:'.freeze
+      PREFIX = '__hyperlinked__base64__:'.freeze
       PREFIX_EXP = %r{^#{PREFIX}}.freeze
 
       def self.dump(data)
