@@ -62,7 +62,7 @@ module Hyperlinked
     end
 
     class SafeCacheSerializer
-      PREFIX = '__hyperlinked__base64__:'.freeze
+      PREFIX = '__base64__:'.freeze
       PREFIX_EXP = %r{^#{PREFIX}}.freeze
 
       def self.dump(data)
