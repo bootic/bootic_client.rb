@@ -6,8 +6,8 @@ require 'hyperlinked/version'
 Gem::Specification.new do |spec|
   spec.name          = "hyperlinked"
   spec.version       = Hyperlinked::VERSION
-  spec.authors       = ["Ismael Celis"]
-  spec.email         = ["ismaelct@gmail.com"]
+  spec.authors       = ["Tomás Pollak", "Ismael Celis"]
+  spec.email         = ["tomaspollak@gmail.com", "ismaelct@gmail.com"]
   spec.description   = %q{A Ruby client for HAL-based hypermedia APIs}
   spec.summary       = %q{A Ruby client for HAL-based hypermedia APIs}
   spec.license       = "MIT"
