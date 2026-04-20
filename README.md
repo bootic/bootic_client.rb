@@ -24,9 +24,9 @@ Hyperlinked.configure do |c|
   c.api_root = 'https://api.example.com/v1'
 
   # Required for OAuth2 strategies
+  c.auth_host     = 'https://auth.example.com'
   c.client_id     = ENV['API_CLIENT_ID']
   c.client_secret = ENV['API_CLIENT_SECRET']
-  c.auth_host     = 'https://auth.example.com'
 
   # Optional
   c.logger     = Logger.new(STDOUT)
@@ -47,7 +47,7 @@ if root.has?(:all_products)
   products = root.all_products(q: 'widgets')
   products.total_items  # => 42
   products.each do |product|
-    puts product.title
+    puts product.name
     puts product.price
   end
 end
