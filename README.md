@@ -1,357 +1,284 @@
-[![Build Status](https://travis-ci.org/bootic/bootic_client.rb.svg?branch=master)](https://travis-ci.org/bootic/bootic_client.rb)
-[![Gem Version](https://badge.fury.io/rb/bootic_client.svg)](http://badge.fury.io/rb/bootic_client)
+# Hyperlinked
 
-
-# BooticClient
-
-Official Ruby client for the [Bootic API](https://developers.bootic.net)
+A Ruby client for [HAL](https://stateless.co/hal_specification.html)-based hypermedia APIs. Navigate any API that follows the HAL (`application/hal+json`) format using link relations, embedded resources, URI templates, and standard HTTP caching — with no coupling to a specific API host.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+```ruby
+gem 'hyperlinked'
+```
 
-    gem 'bootic_client'
+Or install it yourself:
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install bootic_client
+```
+$ gem install hyperlinked
+```
 
 ## Usage
 
-### Configure with you app's credentials
-
-You first must create an OAuth2 Application in your Bootic dashboard. Then configure the client with your `client_id` and `client_secret`.
+### Configure
 
 ```ruby
-BooticClient.configure do |c|
-  # these are required for OAuth2 strategies
-  c.client_id = ENV['BOOTIC_CLIENT_ID']
-  c.client_secret = ENV['BOOTIC_CLIENT_SECRET']
-  # these are optional
-  c.logger = Logger.new(STDOUT)
-  c.logging = true
+Hyperlinked.configure do |c|
+  # Required: the root URL of your API
+  c.api_root = 'https://api.example.com/v1'
+
+  # Required for OAuth2 strategies
+  c.client_id     = ENV['API_CLIENT_ID']
+  c.client_secret = ENV['API_CLIENT_SECRET']
+  c.auth_host     = 'https://auth.example.com'
+
+  # Optional
+  c.logger     = Logger.new(STDOUT)
+  c.logging    = true
   c.cache_store = Rails.cache
-  c.user_agent = "My App v1"
+  c.user_agent  = "My App v1"
 end
 ```
 
-### Using with an existing access token
+### Navigate the API from its root
 
 ```ruby
-bootic = BooticClient.client(:authorized, access_token: 'beidjbewjdiedue...')
+client = Hyperlinked.client(:bearer, access_token: 'your-token-here')
 
-root = bootic.root
+root = client.root
 
 if root.has?(:all_products)
-  # All products
-  all_products = root.all_products(q: 'xmas presents')
-  all_products.total_items # => 23443
-  all_products.each do |product|
+  products = root.all_products(q: 'widgets')
+  products.total_items  # => 42
+  products.each do |product|
     puts product.title
     puts product.price
-  end
-
-  # Iterate through pages of products
-  # See "iterating" section below for a more elegant option
-  if all_products.has?(:next)
-    next_page = all_products.next
-    next_page.each{...}
   end
 end
 ```
 
 ### Iterating
 
-Entities representing lists of things ([products](https://developers.bootic.net/rels/products/), [orders](https://developers.bootic.net/rels/orders/), etc) are fully [enumerable](http://ruby-doc.org/core-2.2.0/Enumerable.html).
+Entities representing lists are fully [Enumerable](http://ruby-doc.org/core-2.2.0/Enumerable.html).
 
 ```ruby
-# These will only iterate this page's worth of products
-all_products.each{|pr| puts pr.title}
-all_products.map(&:title)
-all_products.reduce(0){|sum, pr| sum + pr.price}
+products.each  { |p| puts p.title }
+products.map(&:title)
+products.reduce(0) { |sum, p| sum + p.price }
 ```
 
-These lists might be part of a paginated data set. If you want to iterate items across pages and make sure you consume the full set, use `#full_set`.
+For paginated data sets, use `#full_set` to walk all pages automatically:
 
 ```ruby
-# These will iterate all necessary pages
-all_products.full_set.each{|pr| puts pr.title }
-all_products.full_set.map(&:title)
-all_products.full_set.first(500)
+products.full_set.each  { |p| puts p.title }
+products.full_set.map(&:title)
+products.full_set.first(500)
 ```
 
-You can check whether an entity is iterable with:
+Check whether an entity is iterable:
 
 ```ruby
-all_products.respond_to?(:each)
+products.respond_to?(:each)
 ```
 
 ## Strategies
 
-The Bootic Client supports different authentication strategies depending on the use case.
+Hyperlinked supports several authentication strategies.
 
-### 1. Refresh token flow (web apps)
+### 1. Authorized (token refresh via JWT assertion)
 
-In this flow you first get a token by authorizing an app. ie. using [omniauth-bootic](https://github.com/bootic/omniauth-bootic)
-
-```ruby
-def client
-  @client ||= BooticClient.client(:authorized, access_token: session[:access_token]) do |new_token|
-    session[:access_token] = new_token
-  end
-end
-```
-Note how the client takes an optional block. This block will be called with a new access token whenever the old one expires.
-It's up to your code to store this token somewhere.
-
-### 2. User-less flow (client credentials - automated scripts)
-
-This flow will first use your client credentials to obtain an access_token if started without one.
+For web apps where you already have an access token. The client will automatically exchange it for a fresh one when it expires, using an OAuth2 JWT assertion flow.
 
 ```ruby
-client = BooticClient.client(:client_credentials, scope: 'admin', access_token: some_store[:access_token]) do |new_token|
-  some_store[:access_token] = new_token
+client = Hyperlinked.client(:authorized, access_token: session[:access_token]) do |new_token|
+  session[:access_token] = new_token
 end
 ```
 
-### 3. Basic Auth
+The optional block is called with the new token whenever the old one expires — store it however you like.
 
-This strategy uses a `username` and `password` against APIs supporting HTTP's Basic Authentication scheme.
+### 2. Client Credentials (server-to-server / automated scripts)
 
-The official Bootic API only supports OAuth2 tokens, but this allows the client to be used against internal APIs or stub APIs on development.
+Fetches an access token automatically using client credentials. Pass a stored token to skip the initial auth request.
 
 ```ruby
-client = BooticClient.client(:basic_auth, username: 'foo', password: 'bar')
-
-root = client.root # etc
+client = Hyperlinked.client(:client_credentials, scope: 'admin', access_token: store[:access_token]) do |new_token|
+  store[:access_token] = new_token
+end
 ```
 
-NOTE: `username` and `password` have nothing to do with your Bootic administrative credentials, and will be up to API maintainers to define.
+### 3. Bearer token
 
-### 4. Bearer token
-
-This strategy adds an access token as a header in the format `Authorization: Bearer <your-token-here>`.
-It will not try to refresh an expired token from an Oauth2 server, so there's no need to configure Oauth2 credentials.
+Adds `Authorization: Bearer <token>` to every request. Does not handle token expiry — use this for APIs with long-lived tokens, or in tests.
 
 ```ruby
-client = BooticClient.client(:bearer, access_token: 'foobar')
-
-root = client.root # etc
+client = Hyperlinked.client(:bearer, access_token: 'your-token')
+root = client.root
 ```
 
-Use this with APIs that don't expire tokens, or for testing.
+### 4. Basic Auth
 
-## Non GET links
-
-Most resource links lead to `GET` resources, but some will expect `POST`, `PUT`, `DELETE` or others.
-
-The Bootic API encodes this information in its link metadata so the client will do the right thing. The following example creates a new product on your first shop:
+Sends HTTP Basic credentials on every request.
 
 ```ruby
-bootic = BooticClient.client(:client_credentials)
+client = Hyperlinked.client(:basic_auth, username: 'user', password: 'secret')
+root = client.root
+```
 
-root = bootic.root
+## Non-GET link relations
 
-shop = root.shops.first
+Link metadata can specify any HTTP method. The client uses it automatically:
 
-if shop.can?(:create_product)
-  product = shop.create_product(
-    title: 'A shiny new product',
-    price: 122332,
-    status: "visible",
-    variants: [
-      {
-        title: 'First variant',
-        sku: 'F23332-X',
-        available_if_no_stock: 1,
-        stock: 12
-      }
-    ],
-    collections: [
-      {title: "A new collection"},
-      {id: 1234}
-    ]
+```ruby
+client = Hyperlinked.client(:client_credentials)
+root   = client.root
+items  = root.items
+
+if items.can?(:create_item)
+  new_item = items.create_item(
+    title: 'A new item',
+    status: 'active'
   )
+end
 
-  puts product.rels[:web].href # => 'http://acme.bootic.net/products/a-shiny-new-product'
+if new_item.can?(:delete_item)
+  new_item.delete_item
 end
 ```
 
-### Working with Files and IO instances
+## File / IO uploads
 
-Instances of `File`, other readable `IO` objects (and in fact anything that responds to `#read`) will be base64-encoded internally before JSON-encoding payloads for `POST`, `PUT` and `PATCH` requests.
+Anything that responds to `#read` — `File`, `StringIO`, `open-uri` results, or your own objects — is automatically base64-encoded before JSON serialization in `POST`, `PUT`, and `PATCH` requests.
 
 ```ruby
-asset = product.create_product_asset(
-  filename: 'foo.jpg',
-  data: File.new('/path/to/foo.jpg') # this will base64-encode the file data in the `data` field.
+resource.upload_file(
+  filename: 'photo.jpg',
+  data: File.new('/path/to/photo.jpg')
 )
-```
 
-Because anything that responds to `#read` will be interpreted as file data and base64-encoded, you can also pass instances of `open-uri`.
-
-```ruby
-require "open-uri"
-
-asset = product.create_product_asset(
-  filename: 'foo.jpg',
-  data: open("https://some.server.com/some/image.jpg") # this will base64-encode the file data in the `data` field.
-)
-```
-
-.. or even your own readers
-
-```ruby
-class MyReader
-  def read
-    "some data here"
-  end
-end
-
-asset = product.create_product_asset(
-  filename: 'foo.jpg',
-  data: MyReader.new # this will base64-encode the file data in the `data` field.
+# open-uri works too
+require 'open-uri'
+resource.upload_file(
+  filename: 'photo.jpg',
+  data: open('https://example.com/photo.jpg')
 )
 ```
 
 ## Non-JSON responses
 
-HTTP responses are resolved by handler callables in `BooticClient::Configuration#response_handlers`.
+Responses are resolved by a configurable handler pipeline in `Hyperlinked::Configuration#response_handlers`.
 
-The default stack is:
+Default handlers:
 
-* `BooticClient::ResponseHandlers::Hal`: handles `application/json` responses and wraps JSON data in `BooticClient::Entity` instances.
-* `BooticClient::ResponseHandlers::File`: handles `image/*` responses and wraps image data in IO-like objects.
+- `Hyperlinked::ResponseHandlers::Hal` — handles `application/json`, wraps data in `Hyperlinked::Entity`.
+- `Hyperlinked::ResponseHandlers::File` — handles `image/*`, returns an IO-like object.
 
 ```ruby
-# Fetching product images and saving them to local files:
-product.images.each do |img|
-  io = img.original # HTTP request to image file
-  # now write image data to local file.
-  File.open(io.file_name, 'wb') do |f|
-    f.write io.read
-  end
+# Save an image resource to disk
+resource.images.each do |img|
+  io = img.original
+  File.open(io.file_name, 'wb') { |f| f.write io.read }
 end
 ```
 
-You can register custom response handlers. The example below parses CSV response data.
+Register a custom handler (the first handler whose block returns non-nil wins):
 
 ```ruby
 require 'csv'
 
-# Response handlers are callable (anything that responds to #call(faraday_response, client)
-# if a handler returns `nil`, the next handler in the stack will be called.
 CSVHandler = Proc.new do |resp, _client|
   if resp.headers['Content-Type'] =~ /text\/csv/
-    CSV.parse(resp.body, headings: true)
+    CSV.parse(resp.body, headers: true)
   end
 end
 
-BooticClient.configure do |c|
+Hyperlinked.configure do |c|
   c.response_handlers.append(CSVHandler)
 end
 
-# Now CSV resources will be returned as parsed CSV data
-client = BooticClient.client(:authorized, access_token: 'abc')
-root = client.root
-csv = root.some_csv_resource # returns parsed CSV object.
+client = Hyperlinked.client(:bearer, access_token: 'abc')
+csv    = client.root.some_csv_resource   # => parsed CSV
 ```
 
-## Relation docs
+## CURIE / relation docs
 
-All resource link relations include a "docs" URL so you can learn more about that particular resource.
+If the API advertises CURIE link namespaces, the `docs` URL on each relation is expanded automatically:
 
 ```ruby
-shop = root.shops.first
-puts shop.rels[:create_product].docs # => 'https://developers.bootic.net/rels/create_product'
+root.rels[:create_item].docs  # => 'https://docs.example.com/rels/create_item'
 ```
 
 ## Cache storage
 
-`BooticClient` honours HTTP caching headers included in API responses (such as `ETag` and `Last-Modified`).
+The client honours `ETag` and `Last-Modified` HTTP caching headers. A memory store is used by default.
 
-By default a simple memory store is used. It is recommended that you use a distributed store in production, such as Memcache. In Rails applications you can use the `Rails.cache` interface.
+In Rails, plug in `Rails.cache`:
 
 ```ruby
-BooticClient.configure do |c|
-  ...
+Hyperlinked.configure do |c|
   c.cache_store = Rails.cache
 end
 ```
 
-Outside of Rails, BooticClient ships with a wrapper around the [Dalli](https://github.com/mperham/dalli) memcache client.
-You must include Dalli in your Gemfile and require the wrapper explicitely.
+Outside Rails, use the bundled Memcache wrapper (requires [Dalli](https://github.com/petergoldstein/dalli)):
 
 ```ruby
-require 'bootic_client/stores/memcache'
-CACHE_STORE = BooticClient::Stores::Memcache.new(ENV['MEMCACHE_SERVER'])
+require 'hyperlinked/stores/memcache'
 
-BooticClient.configure do |c|
-  ...
-  c.cache_store = CACHE_STORE
+Hyperlinked.configure do |c|
+  c.cache_store = Hyperlinked::Stores::Memcache.new(ENV['MEMCACHE_SERVER'])
 end
 ```
 
-## Pre-loaded or custom root resources
+## Bootstrapping from a local hash or URL
 
-This client is designed to always navigate APIs starting from the root endpoint (the Hypermedia approach), but it's also possible to skip the root and start from a locally defined resource definition.
+Start from a locally-defined resource without hitting the root endpoint:
 
 ```ruby
-messaging_api = client.from_hash(
-  "_links" => {
-    "send_message" => {"href" => 'https://some.api.com/messages', "method" => 'post'},
-    "delete_message" => {"href" => 'https://some.api.com/messages/:id', "method" => 'delete', "templated" => true}
+api = client.from_hash(
+  '_links' => {
+    'send_message'   => { 'href' => 'https://api.example.com/messages', 'method' => 'post' },
+    'delete_message' => { 'href' => 'https://api.example.com/messages/{id}', 'method' => 'delete', 'templated' => true }
   }
 )
 
-new_message = messaging_api.send_message(title: 'This is a new message')
-
-messaging_api.delete_message(id: new_message.id)
+msg = api.send_message(title: 'Hello')
+api.delete_message(id: msg.id)
 ```
 
-It's also possibe to load a root resource directly from a URL:
+Or load directly from a URL:
 
 ```ruby
-messaging_api_root = client.from_url("https://some.api.com")
-messaging_api.do_something(foo: "bar") # etc
+resource = client.from_url('https://api.example.com/some/resource')
 ```
 
 ## Testing
 
-# What
+Stub chains of link relations without making real HTTP requests:
 
-This library provides methods to simplify testing. For example, to stub a chain of links you can simply do:
+```ruby
+require 'hyperlinked'
 
-```rb
-BooticClient.stub_chain('root.shops.first').and_return_data({
-  'name' => 'Foo bar'
-})
+Hyperlinked.stub!
 
-client = BooticClient.client(:authorized, access_token: 'abc')
-shop = client.root.shops.first
-expect(shop).to be_a BooticClient::Entity
-expect(shop.name).to eq 'Foo bar'
+Hyperlinked.stub_chain('root.orders.first').and_return_data(
+  'id'     => 42,
+  'status' => 'pending'
+)
+
+client = Hyperlinked.client(:bearer, access_token: 'test')
+order  = client.root.orders.first
+
+expect(order).to be_a Hyperlinked::Entity
+expect(order.status).to eq 'pending'
+
+Hyperlinked.unstub!
 ```
 
-You can also stub links that requires arguments, like this:
+Stubs can also match on arguments:
 
-```rb
-BooticClient.stub_chain('root.shops', foo: 1).and_return_data({
-  'name' => 'Foo 1'
-})
-BooticClient.stub_chain('root.shops', foo: 1, bar: { hello: 123 }).and_return_data({
-  'name' => 'Foo 2'
-})
+```ruby
+Hyperlinked.stub_chain('root.orders', status: 'pending').and_return_data('count' => 3)
+Hyperlinked.stub_chain('root.orders', status: 'shipped').and_return_data('count' => 7)
 
-client = BooticClient.client(:authorized, access_token: 'abc')
-expect(client.root.shops(foo: 1).name).to eq 'Foo 1'
-
-# arg order doesn't matter
-expect(client.root.shops(bar: { hello: 123 }, foo: 2).name).to eq 'Foo 2'
+client.root.orders(status: 'pending').count  # => 3
+client.root.orders(status: 'shipped').count  # => 7
 ```
 
 ## Contributing
@@ -360,19 +287,12 @@ expect(client.root.shops(bar: { hello: 123 }, foo: 2).name).to eq 'Foo 2'
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+5. Create a Pull Request
 
 ## Release
 
-Bump version.rb and
+Bump `lib/hyperlinked/version.rb` then:
 
 ```
 bundle exec rake release
 ```
-
-Update, commit and push changelog:
-
-```
-github_changelog_generator -u bootic -p bootic_client.rb
-```
-
