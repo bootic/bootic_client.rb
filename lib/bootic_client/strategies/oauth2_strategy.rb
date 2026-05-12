@@ -32,17 +32,17 @@ module BooticClient
 
       def retryable(&block)
         begin
-          yield
+          super
         rescue AuthorizationError => e
           update_token!
-          yield
+          super
         end
       end
 
       def update_token!
         new_token = get_token
         options[:access_token] = new_token
-        on_new_token.call new_token
+        on_new_token.call(new_token) if on_new_token
       end
 
       def get_token

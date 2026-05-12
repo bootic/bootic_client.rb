@@ -3,6 +3,7 @@
 require "bootic_client/whiny_uri"
 require "bootic_client/entity"
 require 'ostruct'
+require 'weakref'
 
 module BooticClient
 
@@ -21,7 +22,8 @@ module BooticClient
     end
 
     def initialize(attrs, client, complain_on_undeclared_params: self.class.complain_on_undeclared_params)
-      @attrs, @client = attrs, client
+      @attrs = attrs
+      @client = client ? WeakRef.new(client) : nil
       @complain_on_undeclared_params = complain_on_undeclared_params
     end
 
@@ -84,7 +86,16 @@ module BooticClient
     end
 
     protected
-    attr_reader :client, :attrs, :complain_on_undeclared_params
+
+    attr_reader :attrs, :complain_on_undeclared_params
+
+    def client
+      return nil unless @client
+      @client.__getobj__
+    rescue WeakRef::RefError
+      raise "BooticClient: the client for this relation has been garbage collected. " \
+            "Hold a reference to your strategy/client for as long as you need to follow links."
+    end
 
     def uri
       @uri ||= WhinyURI.new(href, complain_on_undeclared_params)
