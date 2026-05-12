@@ -3,15 +3,13 @@
 require 'base64'
 require 'faraday'
 require 'faraday-http-cache'
-require "bootic_client/errors"
+require 'bootic_client/errors'
 require 'faraday/net_http_persistent'
 
 module BooticClient
-
   class Client
-
-    USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}".freeze
-    JSON_MIME = 'application/json'.freeze
+    USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}"
+    JSON_MIME = 'application/json'
 
     attr_reader :options
 
@@ -22,9 +20,9 @@ module BooticClient
         user_agent: USER_AGENT
       }.merge(options.dup)
 
-      @options[:cache_store] = @options[:cache_store] || Faraday::HttpCache::MemoryStore.new
+      @options[:cache_store] ||= BoundedMemoryStore.new
 
-      conn &block if block_given?
+      conn(&block) if block_given?
     end
 
     def get(href, query = {}, headers = {})
@@ -61,9 +59,41 @@ module BooticClient
       end
     end
 
+    def close
+      @conn = nil
+    end
+
+    # In-memory cache with a hard upper bound on entries to prevent unbounded growth.
+    # Evicts the oldest entry when the limit is reached.
+    class BoundedMemoryStore
+      DEFAULT_MAX_SIZE = 500
+
+      def initialize(max_size: DEFAULT_MAX_SIZE)
+        @store = {}
+        @max_size = max_size
+      end
+
+      def read(key)
+        @store[key]
+      end
+
+      def write(key, value)
+        @store.delete(@store.keys.first) if !@store.key?(key) && @store.size >= @max_size
+        @store[key] = value
+      end
+
+      def delete(key)
+        @store.delete(key)
+      end
+
+      def exist?(key)
+        @store.key?(key)
+      end
+    end
+
     class SafeCacheSerializer
-      PREFIX = '__booticclient__base64__:'.freeze
-      PREFIX_EXP = %r{^#{PREFIX}}.freeze
+      PREFIX = '__booticclient__base64__:'
+      PREFIX_EXP = /^#{PREFIX}/.freeze
 
       def self.dump(data)
         data[:body] = "#{PREFIX}#{Base64.strict_encode64(data[:body])}" if data[:body].is_a?(String)
@@ -83,7 +113,7 @@ module BooticClient
 
     DEFAULT_TIMEOUT = 20.freeze # seconds
 
-    def conn(&block)
+    def conn
       request_opts = {
         timeout: (options[:timeout] || DEFAULT_TIMEOUT).to_i, # both read/open timeout
         open_timeout: (options[:open_timeout] || DEFAULT_TIMEOUT).to_i # only open timeout
@@ -96,7 +126,7 @@ module BooticClient
         f.use :http_cache, **cache_options
         f.response :logger, options[:logger] if options[:logging]
         yield f if block_given?
-        f.adapter *Array(options[:faraday_adapter])
+        f.adapter(*Array(options[:faraday_adapter]))
       end
     end
 
@@ -117,7 +147,7 @@ module BooticClient
         yield req if block_given?
       end
 
-      raise_if_invalid! resp
+      raise_if_invalid! resp, "#{verb.upcase} #{href}"
       resp
 
     rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
@@ -129,15 +159,17 @@ module BooticClient
       end
     end
 
-    def raise_if_invalid!(resp)
-      raise ServerError, "Server Error" if resp.status > 499
-      raise NotFoundError, "Not Found" if resp.status == 404
-      raise UnauthorizedError, "Unauthorized request" if resp.status == 401
-      raise AccessForbiddenError, "Access Forbidden" if resp.status == 403
+    def raise_if_invalid!(resp, url = nil)
+      raise ServerError.new('Server Error', url) if resp.status > 499
+      raise TooManyRequestsError.new('Too Many Requests', url) if resp.status == 429
+      raise NotFoundError.new('Not Found', url) if resp.status == 404
+      raise UnauthorizedError.new('Unauthorized Request', url) if resp.status == 401
+      raise AccessForbiddenError.new('Access Forbidden', url) if resp.status == 403
     end
 
     def sanitized(payload)
-      return payload unless payload.kind_of?(Hash)
+      return payload unless payload.is_a?(Hash)
+
       payload.each_with_object({}) do |(k, v), memo|
         memo[k] = if v.kind_of?(Hash)
           sanitized v
@@ -149,5 +181,4 @@ module BooticClient
       end
     end
   end
-
 end

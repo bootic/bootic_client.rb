@@ -320,6 +320,40 @@ messaging_api_root = client.from_url("https://some.api.com")
 messaging_api.do_something(foo: "bar") # etc
 ```
 
+## Testing
+
+# What
+
+This library provides methods to simplify testing. For example, to stub a chain of links you can simply do:
+
+```rb
+BooticClient.stub_chain('root.shops.first').and_return_data({
+  'name' => 'Foo bar'
+})
+
+client = BooticClient.client(:authorized, access_token: 'abc')
+shop = client.root.shops.first
+expect(shop).to be_a BooticClient::Entity
+expect(shop.name).to eq 'Foo bar'
+```
+
+You can also stub links that requires arguments, like this:
+
+```rb
+BooticClient.stub_chain('root.shops', foo: 1).and_return_data({
+  'name' => 'Foo 1'
+})
+BooticClient.stub_chain('root.shops', foo: 1, bar: { hello: 123 }).and_return_data({
+  'name' => 'Foo 2'
+})
+
+client = BooticClient.client(:authorized, access_token: 'abc')
+expect(client.root.shops(foo: 1).name).to eq 'Foo 1'
+
+# arg order doesn't matter
+expect(client.root.shops(bar: { hello: 123 }, foo: 2).name).to eq 'Foo 2'
+```
+
 ## Contributing
 
 1. Fork it

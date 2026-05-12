@@ -2,6 +2,7 @@
 
 require 'bootic_client/relation'
 require 'forwardable'
+require 'weakref'
 
 module BooticClient
   module EnumerableEntity
@@ -19,15 +20,19 @@ module BooticClient
           page.each { |item| yielder.yield item }
           raise StopIteration unless page.has_rel?(:next)
           page = page.next
+
+          if page.has?(:errors) # && page.errors.first.messages.first['cannot be higher'] # reached last page
+            yielder.yield(nil, page.errors) # yield a nil value so caller can stop gracefully
+            raise StopIteration
+          end
         end
       end
     end
   end
 
   class Entity
-
-    CURIE_NS = 'btc'
-    CURIES_REL = 'curies'.freeze
+    CURIE_EXP = /(.+):(.+)/.freeze
+    CURIES_REL = 'curies'
     SPECIAL_PROP_EXP = /^_.+/.freeze
 
     def self.wrap(obj, client: nil, top: nil)
@@ -42,10 +47,11 @@ module BooticClient
     end
 
     def initialize(attrs, client, top: self)
-      @attrs = attrs.kind_of?(Hash) ? attrs : {}
-      @client, @top = client, top
+      @attrs = attrs.is_a?(Hash) ? attrs : {}
+      @client = client ? WeakRef.new(client) : nil
+      @top = top
 
-      self.extend EnumerableEntity if iterable?
+      extend EnumerableEntity if iterable?
     end
 
     def to_hash
@@ -129,8 +135,16 @@ module BooticClient
     end
 
     private
+    attr_reader :top, :attrs
 
-    attr_reader :client, :top, :attrs
+    def client
+      return nil unless @client
+
+      @client.__getobj__
+    rescue WeakRef::RefError
+      raise 'BooticClient: the client for this entity has been garbage collected. ' +
+            'Hold a reference to your strategy/client for as long as you need to follow links.'
+    end
 
     def curies
       @curies ||= top.links.fetch('curies', [])

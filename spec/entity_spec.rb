@@ -290,6 +290,34 @@ describe BooticClient::Entity do
         titles = results.map(&:title)
         expect(titles).to match_array(['iPhone 4', 'iPhone 5', 'Item 3', 'Item 4'])
       end
+
+      it 'handles errors gracefully' do
+        error_data = {
+          "_embedded" => {
+            'errors' => [
+              { field: 'foo', messages: ['Ugly error'] }
+            ]
+          }
+        }
+
+        error_page = BooticClient::Entity.new(error_data, client)
+        expect(client).to receive(:request_and_wrap).with(:get, '/foo?page=2', {}).and_return(error_page)
+        expect(client).to_not receive(:request_and_wrap).with(:get, '/foo?page=3', {})
+
+        valid = []
+        errors = nil
+        entity.full_set.each do |item, errors|
+          if item
+            valid.push(item)
+          else
+            expect(valid.count).to eq(2)
+            expect(errors.first.to_hash).to eq({ field: 'foo', messages: ['Ugly error']})
+          end
+        end
+
+        titles = valid.map(&:title)
+        expect(titles).to match_array(['iPhone 4', 'iPhone 5'])
+      end
     end
   end
 
@@ -302,6 +330,48 @@ describe BooticClient::Entity do
     it 'does not break if response is empty string' do
       entity = BooticClient::Entity.new('', client)
       expect(entity.links).to eql({})
+    end
+  end
+
+  context 'memory leak prevention' do
+    let(:linked_payload) do
+      {
+        'title' => 'Root',
+        '_links' => {'next' => {'href' => '/page/2'}},
+        '_embedded' => {'items' => [{'title' => 'Child'}]}
+      }
+    end
+
+    it 'stores client as a WeakRef so entity graphs do not pin the strategy in memory' do
+      entity = described_class.new(linked_payload, client)
+      expect(entity.instance_variable_get(:@client)).to be_a(WeakRef)
+    end
+
+    it 'also wraps client as a WeakRef in embedded child entities' do
+      entity = described_class.new(linked_payload, client)
+      child = entity.entities[:items].first
+      expect(child.instance_variable_get(:@client)).to be_a(WeakRef)
+    end
+
+    it 'raises a descriptive error when the client has been garbage collected and a link is followed' do
+      entity = described_class.new(linked_payload, Object.new)
+      dead_ref = entity.instance_variable_get(:@client)
+      allow(dead_ref).to receive(:__getobj__).and_raise(WeakRef::RefError)
+      expect { entity.next }.to raise_error(RuntimeError, /garbage collected/)
+    end
+
+    it 'still exposes plain properties after the client is gone, because they are memoised at build time' do
+      entity = described_class.new(linked_payload, Object.new)
+      # warm the properties cache while the client is alive
+      _ = entity.properties
+      dead_ref = entity.instance_variable_get(:@client)
+      allow(dead_ref).to receive(:__getobj__).and_raise(WeakRef::RefError)
+      # reading already-memoised properties must not need the client
+      expect(entity.title).to eq 'Root'
+    end
+
+    it 'accepts a nil client without error' do
+      expect { described_class.new(linked_payload, nil) }.not_to raise_error
     end
   end
 
