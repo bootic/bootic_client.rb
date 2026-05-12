@@ -137,6 +137,10 @@ module BooticClient
     private
     attr_reader :top, :attrs
 
+    def curies
+      @curies ||= top.links.fetch('curies', [])
+    end
+
     def client
       return nil unless @client
 
