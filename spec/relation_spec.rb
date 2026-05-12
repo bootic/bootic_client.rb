@@ -125,4 +125,22 @@ describe BooticClient::Relation do
       end
     end
   end
+
+  context 'memory leak prevention' do
+    it 'stores the client as a WeakRef so relations do not pin the strategy in memory' do
+      relation = described_class.new({'href' => '/foo'}, client)
+      expect(relation.instance_variable_get(:@client)).to be_a(WeakRef)
+    end
+
+    it 'raises a descriptive error when the client has been garbage collected' do
+      relation = described_class.new({'href' => '/foo'}, Object.new)
+      dead_ref = relation.instance_variable_get(:@client)
+      allow(dead_ref).to receive(:__getobj__).and_raise(WeakRef::RefError)
+      expect { relation.run }.to raise_error(RuntimeError, /garbage collected/)
+    end
+
+    it 'accepts a nil client without error' do
+      expect { described_class.new({'href' => '/foo'}, nil) }.not_to raise_error
+    end
+  end
 end

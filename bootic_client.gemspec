@@ -17,6 +17,9 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "ostruct"
+  spec.add_dependency "base64"
+  spec.add_dependency "bigdecimal"
   spec.add_dependency "faraday", '~> 2.2'
   spec.add_dependency 'faraday-net_http_persistent', '~> 2.0'
   spec.add_dependency "uri_template", '~> 0.7'
@@ -24,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "net-http-persistent", '~> 4'
   spec.add_dependency "oauth2", "~> 1.4"
 
+  spec.add_development_dependency 'rexml'
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec", "3.5.0"
   spec.add_development_dependency "jwt", "~> 1.5"
