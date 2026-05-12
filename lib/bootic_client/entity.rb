@@ -31,9 +31,10 @@ module BooticClient
   end
 
   class Entity
-    CURIE_EXP = /(.+):(.+)/.freeze
+
+    CURIE_NS = 'btc'
     CURIES_REL = 'curies'
-    SPECIAL_PROP_EXP = /^_.+/.freeze
+    SPECIAL_PROP_EXP = /^_.+/
 
     def self.wrap(obj, client: nil, top: nil)
       case obj
@@ -210,7 +211,7 @@ module BooticClient
       end
 
       def has?(key)
-        q = has_key?(key.to_s) || !!has_boolean?(key.to_s)
+        has_key?(key.to_s) || !!has_boolean?(key.to_s)
       end
 
       def inspect
