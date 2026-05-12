@@ -75,11 +75,24 @@ describe BooticClient::Entity do
     end
 
     it 'wraps object properties as entities' do
-      expect(entity.an_object).to be_a described_class
+      expect(entity.an_object).to be_a BooticClient::Entity::PropertySet
+
       expect(entity.an_object.name).to eql('Foobar')
       expect(entity.an_object.age).to eql(22)
-      expect(entity.an_object.another_object).to be_a described_class
+      expect(entity.an_object.another_object).to be_a BooticClient::Entity::PropertySet
       expect(entity.an_object.another_object.foo).to eq 'bar'
+
+      expect(entity.an_object.dig('another_object', 'foo')).to eq('bar')
+      expect(entity.an_object.to_hash).to eq({"name"=>"Foobar", "age"=>22, "another_object"=>{"foo"=>"bar"}})
+      expect(entity.an_object.to_h).to eq({"name"=>"Foobar", "age"=>22, "another_object"=>{"foo"=>"bar"}})
+    end
+
+    it 'allows enumerating over property sets' do
+      expect(entity.an_object.respond_to?(:each_with_object)).to eq(true)
+      values = entity.an_object.map { |key, val| val }
+      expect(values[0]).to eq("Foobar")
+      expect(values[1]).to eq(22)
+      expect(values[2]).to be_a(BooticClient::Entity::PropertySet)
     end
 
     it 'has a #properties object' do
@@ -92,6 +105,18 @@ describe BooticClient::Entity do
       expect(entity.has?(:foobar)).to eql(false)
     end
 
+    it 'responds to #[]' do
+      expect(entity[:total_items]).to eql(10)
+      expect(entity[:items]).to be_a(BooticClient::Entity::EntityArray)
+      expect(entity[:foobar]).to eql(nil)
+    end
+
+    it 'responds to #try (same behaviour as [])' do
+      expect(entity.try(:total_items)).to eql(10)
+      expect(entity.try(:items)).to be_a(BooticClient::Entity::EntityArray)
+      expect(entity.try(:foobar)).to eql(nil)
+    end
+
     describe '#to_hash' do
       it 'returns original data' do
         expect(entity.to_hash).to eql(list_payload)
@@ -100,13 +125,32 @@ describe BooticClient::Entity do
 
     describe 'embedded entities' do
 
+      it 'is a EntitySet' do
+        expect(entity.entities).to be_a(BooticClient::Entity::EntitySet)
+        expect(entity.entities.to_hash).to eq({
+          "items"=> [{"title"=>"iPhone 4", "price"=>12345, "published"=>false, "_links"=>{"self"=>{:href=>"/products/iphone4"}, "btc:delete_product"=>{"href"=>"/products/12345"}}, "_embedded"=>{"shop"=>{"name"=>"Acme"}}}, {"title"=>"iPhone 5", "price"=>12342, "published"=>true, "_links"=>{"self"=>{:href=>"/products/iphone5"}}, "_embedded"=>{"shop"=>{"name"=>"Apple"}}}]
+        })
+      end
+
       it 'has a #entities object' do
-        expect(entity.entities[:items]).to be_a(Array)
+        expect(entity.entities[:items]).to be_a(BooticClient::Entity::EntityArray)
         expect(entity.entities[:items].first.entities[:shop]).to be_kind_of(BooticClient::Entity)
       end
 
+      it '#items is a enumerable object' do
+        items = entity.entities[:items]
+        expect(items).to be_a(Enumerable)
+        expect(items.to_a).to be_a(Array)
+        expect(items.any?).to eq(true)
+
+        res = items.any? do |item|
+          expect(item).to be_a(BooticClient::Entity)
+          item.title == 'iPhone 4'
+        end
+        expect(res).to be(true)
+      end
+
       it 'are exposed like normal attributes' do
-        expect(entity.items).to be_kind_of(Array)
         entity.items.first.tap do |product|
           expect(product).to be_kind_of(BooticClient::Entity)
           expect(product.title).to eql('iPhone 4')
@@ -125,9 +169,17 @@ describe BooticClient::Entity do
         end
       end
 
-      it 'includes FALSE values' do
+      it 'includes FALSE values, and allows querying with ?' do
         expect(entity.items.first.published).to be false
+        expect(entity.items.first.published?).to be false
+
         expect(entity.items.last.published).to be true
+        expect(entity.items.last.published?).to be true
+
+        expect(entity.items.first.has?(:published?)).to be true
+        expect(entity.items.first.has?(:published)).to be true
+        expect(entity.items.last.has?(:published)).to be true
+        expect(entity.items.last.has?(:published?)).to be true
       end
     end #/ embedded entities
 
@@ -189,18 +241,24 @@ describe BooticClient::Entity do
     end
 
     describe 'iterating' do
-      it 'is an enumerable if it is a list' do
+      it 'is an enumerable if it contains embedded items' do
         prods = []
-        entity.each{|pr| prods << pr}
-        expect(prods).to match_array(entity.items)
-        expect(entity.map{|pr| pr}).to match_array(entity.items)
+        entity.each { |pr| prods << pr }
+        expect(prods[0]).to eq(entity.items[0])
+        expect(prods[1]).to eq(entity.items[1])
+
+        mapped = entity.map{|pr| pr}
+        expect(mapped[0]).to eq(entity.items[0])
+        expect(mapped[1]).to eq(entity.items[1])
+
         expect(entity.reduce(0){|sum,e| sum + e.price.to_i}).to eql(24687)
         expect(entity.each).to be_kind_of(Enumerator)
       end
 
-      it 'is not treated as an array if not a list' do
+      it 'does not respond to each if no embedded items' do
         ent = BooticClient::Entity.new({'foo' => 'bar'}, client)
         expect(ent).not_to respond_to(:each)
+        # expect { ent.each { |i| } }.to raise_error(NoMethodError)
       end
     end
 

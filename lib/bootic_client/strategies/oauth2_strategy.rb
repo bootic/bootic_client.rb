@@ -5,7 +5,9 @@ require 'bootic_client/strategies/strategy'
 
 module BooticClient
   module Strategies
+
     class Oauth2Strategy < Strategy
+
       def inspect
         %(#<#{self.class.name} cid: #{config.client_id} root: #{config.api_root} auth: #{config.auth_host}>)
       end
@@ -28,11 +30,13 @@ module BooticClient
         }
       end
 
-      def retryable
-        yield
-      rescue AuthorizationError
-        update_token!
-        yield
+      def retryable(&block)
+        begin
+          super
+        rescue AuthorizationError => e
+          update_token!
+          super
+        end
       end
 
       def update_token!
@@ -52,6 +56,8 @@ module BooticClient
           site: config.auth_host
         )
       end
+
     end
+
   end
 end

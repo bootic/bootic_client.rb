@@ -129,6 +129,35 @@ describe BooticClient::Client do
         end
       end
 
+      context 'timeouts' do
+        it 'triggers a new request' do
+          client = described_class.new(timeout: '60')
+          req = stub_request(:get, root_url)
+            .to_timeout
+
+          expect do
+            client.get(root_url, {}, request_headers)
+          end.to raise_error(Faraday::TimeoutError)
+
+          expect(req).to have_been_requested.times(3)
+        end
+
+        it 'can be configured' do
+          expect(Faraday).to receive(:new).with(request: {
+            open_timeout: 20,
+            timeout: 60
+          }).and_call_original
+
+          client = described_class.new(timeout: '60')
+
+          req = stub_request(:get, root_url)
+            .to_return(status: 200, body: JSON.dump(root_data), headers: response_headers)
+
+          client.get(root_url, {}, request_headers)
+          expect(req).to have_been_requested
+        end
+      end
+
       context 'errors' do
         describe '500 Server error' do
           before do

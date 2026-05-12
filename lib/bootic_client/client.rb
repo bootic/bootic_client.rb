@@ -7,6 +7,7 @@ require 'bootic_client/errors'
 require 'faraday/net_http_persistent'
 
 module BooticClient
+
   class Client
     USER_AGENT = "[BooticClient v#{VERSION}] Ruby-#{RUBY_VERSION} - #{RUBY_PLATFORM}"
     JSON_MIME = 'application/json'
@@ -22,7 +23,7 @@ module BooticClient
 
       @options[:cache_store] ||= BoundedMemoryStore.new
 
-      conn(&block) if block_given?
+      conn &block if block_given?
     end
 
     def get(href, query = {}, headers = {})
@@ -102,22 +103,29 @@ module BooticClient
 
       def self.load(string)
         data = JSON.load(string)
-        data['body'] = Base64.strict_decode64(data['body'].sub(PREFIX, '')) if data['body'] =~ PREFIX_EXP
+        if data['body'] =~ PREFIX_EXP
+          data['body'] = Base64.strict_decode64(data['body'].sub(PREFIX, ''))
+        end
         data
       end
     end
 
     private
 
+    DEFAULT_TIMEOUT = 20.freeze # seconds
+
     def conn
-      @conn ||= Faraday.new do |f|
+      request_opts = {
+        timeout: (options[:timeout] || DEFAULT_TIMEOUT).to_i, # both read/open timeout
+        open_timeout: (options[:open_timeout] || DEFAULT_TIMEOUT).to_i # only open timeout
+      }
+
+      @conn ||= Faraday.new(request: request_opts) do |f|
         cache_options = { serializer: SafeCacheSerializer, shared_cache: false, store: options[:cache_store] }
         cache_options[:logger] = options[:logger] if options[:logging]
 
         f.use :http_cache, **cache_options
         f.response :logger, options[:logger] if options[:logging]
-        f.options.timeout = options[:timeout] if options[:timeout]
-        f.options.open_timeout = options[:open_timeout] if options[:open_timeout]
         yield f if block_given?
         f.adapter(*Array(options[:faraday_adapter]))
       end
@@ -131,7 +139,9 @@ module BooticClient
       }
     end
 
-    def validated_request!(verb, href)
+    def validated_request!(verb, href, &block)
+      retries ||= 0
+
       resp = conn.send(verb) do |req|
         req.url href
         req.headers.update request_headers
@@ -140,6 +150,14 @@ module BooticClient
 
       raise_if_invalid! resp, "#{verb.upcase} #{href}"
       resp
+
+    rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+      if (retries += 1) < 3 # max retries
+        puts "Got #{e.class} error, attempt #{retries}, retrying..."
+        retry
+      else
+        raise
+      end
     end
 
     def raise_if_invalid!(resp, url = nil)
@@ -154,14 +172,15 @@ module BooticClient
       return payload unless payload.is_a?(Hash)
 
       payload.each_with_object({}) do |(k, v), memo|
-        memo[k] = if v.is_a?(Hash)
-                    sanitized v
-                  elsif v.respond_to?(:read)
-                    Base64.encode64 v.read
-                  else
-                    v
-                  end
+        memo[k] = if v.kind_of?(Hash)
+          sanitized v
+        elsif v.respond_to?(:read)
+          Base64.encode64 v.read
+        else
+          v
+        end
       end
     end
   end
+
 end
