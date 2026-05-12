@@ -35,13 +35,10 @@ module BooticClient
     CURIES_REL = 'curies'
     SPECIAL_PROP_EXP = /^_.+/.freeze
 
-    attr_reader :curies, :entities
-
     def initialize(attrs, client, top: self)
       @attrs = attrs.is_a?(Hash) ? attrs : {}
       @client = client ? WeakRef.new(client) : nil
       @top = top
-      build!
       extend EnumerableEntity if iterable?
     end
 
@@ -52,6 +49,20 @@ module BooticClient
     def [](key)
       key = key.to_sym
       has_property?(key) ? properties[key] : entities[key]
+    end
+
+    def curies
+      @curies ||= top.links.fetch('curies', [])
+    end
+
+    def entities
+      @entities ||= attrs.fetch('_embedded', {}).each_with_object({}) do |(k, v), memo|
+        memo[k.to_sym] = if v.is_a?(Array)
+          v.map { |ent_attrs| Entity.new(ent_attrs, client, top: top) }
+        else
+          Entity.new(v, client, top: top)
+        end
+      end
     end
 
     def has?(prop_name)
@@ -112,11 +123,7 @@ module BooticClient
     end
 
     def has_entity?(prop_name)
-      entities.has_key? prop_name.to_sym
-    end
-
-    def has_rel?(prop_name)
-      rels.has_key? prop_name.to_sym
+      (entities || {}).has_key? prop_name.to_sym
     end
 
     def rels
@@ -137,8 +144,11 @@ module BooticClient
       end
     end
 
-    private
+    def has_rel?(prop_name)
+      (rels || {}).has_key? prop_name.to_sym
+    end
 
+    private
     attr_reader :top, :attrs
 
     def client
@@ -151,19 +161,8 @@ module BooticClient
     end
 
     def iterable?
-      has_entity?(:items) && entities[:items].respond_to?(:each)
+      has_entity?(:items) && (entities || {})[:items].respond_to?(:each)
     end
 
-    def build!
-      @curies = top.links.fetch('curies', [])
-
-      @entities = attrs.fetch('_embedded', {}).each_with_object({}) do |(k, v), memo|
-        memo[k.to_sym] = if v.is_a?(Array)
-                           v.map { |ent_attrs| Entity.new(ent_attrs, client, top: top) }
-                         else
-                           Entity.new(v, client, top: top)
-                         end
-      end
-    end
   end
 end
